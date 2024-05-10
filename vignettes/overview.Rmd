@@ -58,7 +58,7 @@ devtools::install_github("demuellae/muRtools")
 devtools::install_github("demuellae/muReportR")
 
 # install ChrAccR
-devtools::install_github("GreenleafLab/ChrAccR", dependencies=TRUE)
+devtools::install_github("EpigenomeInformatics/ChrAccR", dependencies=TRUE)
 ```
 
 We also provide complementary packages that contain genome-specific annotations. We highly recommend installing these annotation packages in order to speed up certain steps of the analysis:
@@ -79,7 +79,7 @@ library(ChrAccR)
 
 The `ChrAccRex` data package contains a small example ATAC-seq datasets for `ChrAccR`. If you haven't already installed `ChrAccRex` use
 ```{r, message = FALSE, warning = FALSE, eval = FALSE}
-devtools::install_github("GreenleafLab/ChrAccRex")
+devtools::install_github("EpigenomeInformatics/ChrAccRex")
 ```
 
 Note that many of the plots created in this vignette use the excellent `ggplot2` package. The following code loads the package and sets a different plotting theme:

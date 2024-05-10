@@ -19,9 +19,9 @@ devtools::install_github("demuellae/muRtools")
 devtools::install_github("demuellae/muReportR")
 
 # install ChrAccR
-devtools::install_github("GreenleafLab/ChrAccR", dependencies=TRUE)
+devtools::install_github("EpigenomeInformatics/ChrAccR", dependencies=TRUE)
 ```
 
 ## Getting started
 
-The `ChrAccR` [vignette](https://GreenleafLab.github.io/ChrAccR/articles/overview.html) provides a most excellent starting point to get familiar with the package.
+The `ChrAccR` [vignette](https://epigenomeinformatics.github.io/ChrAccR/articles/overview.html) provides a most excellent starting point to get familiar with the package.

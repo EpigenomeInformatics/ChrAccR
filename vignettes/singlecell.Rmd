@@ -47,7 +47,7 @@ theme_set(theme_bw())
 
 In addition to bulk data, the `ChrAccRex` data package contains a small example single-cell ATAC-seq datasets. If you haven't already installed `ChrAccRex` use
 ```{r, message = FALSE, warning = FALSE, eval = FALSE}
-devtools::install_github("GreenleafLab/ChrAccRex")
+devtools::install_github("EpigenomeInformatics/ChrAccRex")
 ```
 
 The example data used in this vignette was designed for illustrating the functionality of `ChrAccR` rather than a full analysis. It contains ATAC-seq data for a subset of 3000 cells derived from peripheral blood and bone marrow samples describing human hematopoiesis [@Granja:nbt:2019] and it focuses on only a subset of the human genome (chromosomes 1 and 21). It can be loaded using:
@@ -268,7 +268,7 @@ dsa_full <- regionAggregation(dsa_full, itlsi$clusterPeaks_unfiltered, "peaks_it
 
 ### Analysis reports
 
-`ChrAccR` also provides methods to automatically generate analysis reports that summarize most of the above analysis steps. The reports for the full single-cell dataset described here can also be found in the ['Resource' section](https://greenleaflab.github.io/ChrAccR/articles/articles/resource.html) of the ChrAccR website.
+`ChrAccR` also provides methods to automatically generate analysis reports that summarize most of the above analysis steps. The reports for the full single-cell dataset described here can also be found in the ['Resource' section](https://epigenomeinformatics.github.io/ChrAccR/articles/articles/resource.html) of the ChrAccR website.
 Provided with a `DsATAC` dataset these reports can be generated with a call to the corresponding `createReport_*` function. For instance, the `createReport_summary` generates a report containing an overview of sample and cell statistics:
 
 ```{r, message = FALSE, warning = FALSE, eval=FALSE}
