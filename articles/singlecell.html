@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ChrAccR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.9.21</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.9.24</span>
       </span>
     </div>
 
@@ -66,7 +66,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="https://github.com/GreenleafLab/ChrAccR" class="external-link">
+  <a href="https://github.com/EpigenomeInformatics/ChrAccR" class="external-link">
     <span class="fa fa-github"></span>
      
     GitHub
@@ -90,7 +90,7 @@
 data using ChrAccR</div></h1>
                         <h4 data-toc-skip class="author">Fabian Mueller</h4>
             
-            <h4 data-toc-skip class="date">2023-03-17</h4>
+            <h4 data-toc-skip class="date">2024-05-10</h4>
       
       
       <div class="hidden name"><code>singlecell.Rmd</code></div>
@@ -114,7 +114,7 @@ data using ChrAccR</div></h1>
 </h2>
 <p>In addition to bulk data, the <code>ChrAccRex</code> data package contains a small example single-cell ATAC-seq datasets. If you haven’t already installed <code>ChrAccRex</code> use</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"GreenleafLab/ChrAccRex"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"EpigenomeInformatics/ChrAccRex"</span><span class="op">)</span></span></code></pre></div>
 <p>The example data used in this vignette was designed for illustrating the functionality of <code>ChrAccR</code> rather than a full analysis. It contains ATAC-seq data for a subset of 3000 cells derived from peripheral blood and bone marrow samples describing human hematopoiesis <span class="citation">(<a href="#ref-Granja:nbt:2019" role="doc-biblioref">Granja et al. 2019</a>)</span> and it focuses on only a subset of the human genome (chromosomes 1 and 21). It can be loaded using:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dsa</span> <span class="op">&lt;-</span> <span class="fu">ChrAccRex</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ChrAccRex/man/loadExample.html" class="external-link">loadExample</a></span><span class="op">(</span><span class="st">"dsAtacSc_hema_example"</span><span class="op">)</span></span></code></pre></div>
@@ -356,7 +356,7 @@ do.call(cowplot::plot_grid, plotL)
 <div class="section level4">
 <h4 id="analysis-reports">Analysis reports<a class="anchor" aria-label="anchor" href="#analysis-reports"></a>
 </h4>
-<p><code>ChrAccR</code> also provides methods to automatically generate analysis reports that summarize most of the above analysis steps. The reports for the full single-cell dataset described here can also be found in the <a href="https://greenleaflab.github.io/ChrAccR/articles/articles/resource.html" class="external-link">‘Resource’ section</a> of the ChrAccR website. Provided with a <code>DsATAC</code> dataset these reports can be generated with a call to the corresponding <code>createReport_*</code> function. For instance, the <code>createReport_summary</code> generates a report containing an overview of sample and cell statistics:</p>
+<p><code>ChrAccR</code> also provides methods to automatically generate analysis reports that summarize most of the above analysis steps. The reports for the full single-cell dataset described here can also be found in the <a href="https://epigenomeinformatics.github.io/ChrAccR/articles/articles/resource.html" class="external-link">‘Resource’ section</a> of the ChrAccR website. Provided with a <code>DsATAC</code> dataset these reports can be generated with a call to the corresponding <code>createReport_*</code> function. For instance, the <code>createReport_summary</code> generates a report containing an overview of sample and cell statistics:</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/createReport_summary-DsATAC-method.html">createReport_summary</a></span><span class="op">(</span><span class="va">dsa_full</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"reports"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>The report generated by the <code>createReport_exploratory</code> functions comprises unsupervised analysis, including dimensionality reduction and the quantification of transcription factor activities. Analysis parameters for generating these reports can be configures using the <code>setConfigElement</code> function.</p>
@@ -377,12 +377,12 @@ do.call(cowplot::plot_grid, plotL)
 </h2>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; [1] "2023-03-17"</code></pre>
+<pre><code>&gt; [1] "2024-05-10"</code></pre>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt; R version 4.2.2 (2022-10-31)
 &gt; Platform: aarch64-apple-darwin20 (64-bit)
-&gt; Running under: macOS Ventura 13.2.1
+&gt; Running under: macOS 14.4.1
 &gt; 
 &gt; Matrix products: default
 &gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
@@ -395,7 +395,7 @@ do.call(cowplot::plot_grid, plotL)
 &gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
 &gt; 
 &gt; other attached packages:
-&gt; [1] ggplot2_3.4.1  ChrAccR_0.9.21
+&gt; [1] ggplot2_3.4.1  ChrAccR_0.9.24
 &gt; 
 &gt; loaded via a namespace (and not attached):
 &gt;   [1] colorspace_2.1-0                  rjson_0.2.21                     
@@ -412,7 +412,7 @@ do.call(cowplot::plot_grid, plotL)
 &gt;  [23] png_0.1-8                         shiny_1.7.4                      
 &gt;  [25] httr_1.4.5                        readr_2.1.4                      
 &gt;  [27] compiler_4.2.2                    lazyeval_0.2.2                   
-&gt;  [29] ChrAccRex_0.2                     Matrix_1.5-3                     
+&gt;  [29] ChrAccRex_0.2                     Matrix_1.6-5                     
 &gt;  [31] fastmap_1.1.1                     cli_3.6.0                        
 &gt;  [33] later_1.3.0                       muLogR_0.2                       
 &gt;  [35] htmltools_0.5.4                   tools_4.2.2                      
@@ -451,10 +451,10 @@ do.call(cowplot::plot_grid, plotL)
 &gt; [101] plyr_1.8.8                        magrittr_2.0.3                   
 &gt; [103] R6_2.5.1                          IRanges_2.32.0                   
 &gt; [105] generics_0.1.3                    DelayedArray_0.24.0              
-&gt; [107] DBI_1.1.3                         pillar_1.8.1                     
+&gt; [107] DBI_1.1.3                         pillar_1.9.0                     
 &gt; [109] withr_2.5.0                       KEGGREST_1.38.0                  
 &gt; [111] RCurl_1.98-1.10                   tibble_3.2.0                     
-&gt; [113] crayon_1.5.2                      muRtools_0.9.5                   
+&gt; [113] crayon_1.5.2                      muRtools_0.9.6                   
 &gt; [115] utf8_1.2.3                        plotly_4.10.1                    
 &gt; [117] nabor_0.5.0                       tzdb_0.3.0                       
 &gt; [119] rmarkdown_2.20                    TFBSTools_1.36.0                 
