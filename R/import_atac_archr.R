@@ -150,7 +150,7 @@ DsATACsc.archr <- function(ap, useTiling=TRUE, keepInsertionInfo=FALSE, diskDump
 		for (i in seq_along(sampleIds)){
 			sid <- sampleIds[i]
 			logger.start(c("Importing arrow file for sample", ":", sid, paste0("(", i, " of ", length(sampleIds), ")")))
-				fragGrl <- ArchR::getFragmentsFromArrow(afs[sid], cellNames=ArchR::getCellNames(ap), verbose=FALSE)
+				fragGrl <- ArchR::getFragmentsFromArrow(afs[sid], cellNames=ArchR::getCellNames(ap), verbose=FALSE, logFile=tempfile())
 				fragGrl <- muRtools::setGenomeProps(fragGrl, genomeAss, dropUnknownChrs=TRUE, onlyMainChrs=TRUE, adjChrNames=TRUE)
 				cids <- elementMetadata(fragGrl)[,"RG"]
 				cids <- gsub("#", "_", cids)
