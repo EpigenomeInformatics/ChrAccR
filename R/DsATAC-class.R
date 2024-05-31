@@ -969,6 +969,11 @@ setMethod("join",
 		logger.warning("IN DEVELOPMENT: The join function for DsATAC objects has not extensively been tested yet")
 		objectA <- .object
 
+		# # Disk dumped objects are dense by default
+		# # TODO: check if this is generally the case
+		# if (objectA@diskDump && objectA@sparseCounts) objectA@sparseCounts <- FALSE
+		# if (objectB@diskDump && objectB@sparseCounts) objectB@sparseCounts <- FALSE
+
 		# compatibility checks
 		if (getGenome(objectA) != getGenome(objectB)) logger.error("Could not combine objects: non-matching genomes")
 		if ((objectA@diskDump != objectB@diskDump) | (objectA@diskDump.fragments != objectB@diskDump.fragments)){
