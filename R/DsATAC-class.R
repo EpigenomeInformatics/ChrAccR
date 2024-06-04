@@ -370,8 +370,12 @@ setMethod("getFragmentNum",
 		sampleIds=getSamples(.object)
 	) {
 		if (!all(sampleIds %in% getSamples(.object))) logger.error(c("Invalid sampleIds:", paste(setdiff(sampleIds, getSamples(.object)), collapse=", ")))
-		fgrl <- getFragmentGrl(.object, getSamples(.object), asGRangesList=FALSE)
-		res <- sapply(fgrl, length)
+
+		res <- sapply(sampleIds, FUN=function(sid){length(getFragmentGr(.object, sid))})
+		names(res) <- sampleIds
+		# too much memory footprint on large objects
+		# fgrl <- getFragmentGrl(.object, getSamples(.object), asGRangesList=FALSE)
+		# res <- sapply(fgrl, length)
 		return(res)
 	}
 )
