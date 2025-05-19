@@ -15,8 +15,8 @@
 Character vector of sample IDs in the dataset
 }
 \description{
-Return sample IDs in a dataset
+Returns the sample IDs in the dataset
 }
-\author{
-Fabian Mueller
+\details{
+Return sample IDs in a dataset
 }

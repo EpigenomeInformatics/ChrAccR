@@ -9,15 +9,12 @@ prepareMotifmatchr(genome, motifs)
 \arguments{
 \item{genome}{character string specifying genome assembly}
 
-\item{motifs}{either a character string (currently only "jaspar" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported) or an object containing PWMs
-that can be used by \code{motifmatchr::matchMotifs} (such as an \code{PFMatrixList} or \code{PWMatrixList} object)}
+\item{motifs}{either a character string (currently "jaspar2018", "jaspar2020", "jaspar_vert" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported) 
+or an object containing PWMs that can be used by \code{motifmatchr::matchMotifs} (such as a \code{PFMatrixList} or \code{PWMatrixList} object)}
 }
 \value{
 a list containing objects to be used as arguments for \code{motifmatchr}
 }
 \description{
-prepare objects for a \code{motifmatchr} analysis
-}
-\author{
-Fabian Mueller
+Prepare objects for a \code{motifmatchr} analysis
 }
