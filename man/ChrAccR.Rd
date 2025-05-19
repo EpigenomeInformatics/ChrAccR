@@ -2,8 +2,13 @@
 % Please edit documentation in R/ChrAccR.R
 \docType{package}
 \name{ChrAccR}
+\alias{ChrAccR-package}
 \alias{ChrAccR}
 \title{ChrAccR: Analyzing chromatin accessibility data in R.}
 \description{
 Tools for analyzing chromatin accessibility data in R. Currently supports ATAC-seq and NOMe-seq data analysis.
+}
+\author{
+\strong{Maintainer}: Fabian Mueller \email{muellerf@stanford.edu} (\href{https://orcid.org/0000-0001-5809-2321}{ORCID})
+
 }

@@ -74,36 +74,36 @@ DsAcc <- function(siteCoord, sampleAnnot, genome, diskDump=FALSE){
 ################################################################################
 # Getters
 ################################################################################
+# Ensure that the generic function is defined
 if (!isGeneric("getSamples")) {
-	setGeneric(
-		"getSamples",
-		function(.object) standardGeneric("getSamples"),
-		signature=c(".object")
-	)
+  setGeneric(
+    "getSamples",
+    function(.object) standardGeneric("getSamples"),
+    signature = c(".object")
+  )
 }
+
 #' getSamples-methods
 #'
 #' Return sample IDs in a dataset
 #'
 #' @param .object \code{\linkS4class{DsAcc}} object
 #' @return Character vector of sample IDs in the dataset
-#'
+#' @description Returns the sample IDs in the dataset
 #' @rdname getSamples-DsAcc-method
 #' @docType methods
 #' @aliases getSamples
 #' @aliases getSamples,DsAcc-method
-#' @author Fabian Mueller
 #' @export
 setMethod("getSamples",
-	signature(
-		.object="DsAcc"
-	),
-	function(
-		.object
-	) {
-		return(rownames(.object@sampleAnnot))
-	}
+  signature(
+    .object = "DsAcc"
+  ),
+  function(.object) {
+    return(rownames(.object@sampleAnnot))
+  }
 )
+
 #-------------------------------------------------------------------------------
 #' Retrieve the number of samples contained in a DsAcc object
 #'

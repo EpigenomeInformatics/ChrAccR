@@ -3,102 +3,114 @@
 ################################################################################
 
 ################################################################################
-# motifmatchr  helpers
+# motifmatchr helpers
 ################################################################################
 #' prepareMotifmatchr
 #' 
-#' prepare objects for a \code{motifmatchr} analysis
+#' Prepare objects for a \code{motifmatchr} analysis
+#' 
 #' @param genome character string specifying genome assembly
-#' @param motifs either a character string (currently only "jaspar" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported) or an object containing PWMs
-#'               that can be used by \code{motifmatchr::matchMotifs} (such as an \code{PFMatrixList} or \code{PWMatrixList} object)
+#' @param motifs either a character string (currently "jaspar2018", "jaspar2020", "jaspar_vert" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported) 
+#'               or an object containing PWMs that can be used by \code{motifmatchr::matchMotifs} (such as a \code{PFMatrixList} or \code{PWMatrixList} object)
 #' @return a list containing objects to be used as arguments for \code{motifmatchr}
-#' @author Fabian Mueller
 #' @export
-prepareMotifmatchr <- function(genome, motifs){
-	res <- list()
+prepareMotifmatchr <- function(genome, motifs) {
+  res <- list()
 
-	# get the species name and the genome sequence object based on the object
-	genomeObj <- genome
-	if (!is.element("BSgenome", class(genomeObj))){
-		genomeObj <- getGenomeObject(genome)
-	}
-	spec <- organism(genomeObj)
+  # get the species name and the genome sequence object based on the object
+  genomeObj <- genome
+  if (!is.element("BSgenome", class(genomeObj))) {
+    genomeObj <- getGenomeObject(genome)
+  }
+  spec <- provider(genomeObj)  # Extract the provider (e.g., "Homo sapiens" or "Mus musculus")
 
-	# get the motif PWMs
-	motifL <- TFBSTools::PWMatrixList()
-	if (is.character(motifs)){
-		if (is.element("jaspar", motifs)){
-			# copied code from chromVAR, but updated the JASPAR version
-			opts <- list()
-			opts["species"] <- spec
-			opts["collection"] <- "CORE"
-			# gets the non-redundant set by default
-			mlCur <- TFBSTools::getMatrixSet(JASPAR2018::JASPAR2018, opts)
-			if (!isTRUE(all.equal(TFBSTools::name(mlCur), names(mlCur)))){
-				names(mlCur) <- paste(names(mlCur), TFBSTools::name(mlCur), sep = "_")
-			} 
-			motifL <- c(motifL, TFBSTools::toPWM(mlCur))
-		}
-		if (is.element("jaspar_vert", motifs)){
-			# JASPER for all vertebrate TFBS
-			opts <- list()
-			opts["tax_group"] <- "vertebrates"
-			opts["collection"] <- "CORE"
-			# gets the non-redundant set by default
-			mlCur <- TFBSTools::getMatrixSet(JASPAR2018::JASPAR2018, opts)
-			if (!isTRUE(all.equal(TFBSTools::name(mlCur), names(mlCur)))){
-				names(mlCur) <- paste(names(mlCur), TFBSTools::name(mlCur), sep = "_")
-			} 
-			motifL <- c(motifL, TFBSTools::toPWM(mlCur))
-		}
-		if (is.element("jaspar2016", motifs)){
-			motifL <- c(motifL, TFBSTools::toPWM(chromVAR::getJasparMotifs(species=spec)))
-		}
-		if (is.element("homer", motifs)){
-			if (!requireNamespace("chromVARmotifs")) logger.error(c("Could not load dependency: chromVARmotifs"))
-			data("homer_pwms")
-			motifL <- c(motifL, chromVARmotifs::homer_pwms)
-		}
-		if (is.element("encode", motifs)){
-			if (!requireNamespace("chromVARmotifs")) logger.error(c("Could not load dependency: chromVARmotifs"))
-			data("encode_pwms")
-			motifL <- c(motifL, chromVARmotifs::encode_pwms)
-		}
-		if (is.element("cisbp", motifs)){
-			if (!requireNamespace("chromVARmotifs")) logger.error(c("Could not load dependency: chromVARmotifs"))
-			if (spec == "Mus musculus"){
-				data("mouse_pwms_v1")
-				motifL <- c(motifL, chromVARmotifs::mouse_pwms_v1)
-			} else if (spec == "Homo sapiens"){
-				data("human_pwms_v1")
-				motifL <- c(motifL, chromVARmotifs::human_pwms_v1)
-			} else {
-				logger.warning(c("Could not find cisBP annotation for species", spec))
-			}
-		}
-		if (is.element("cisbp_v2", motifs)){
-			if (!requireNamespace("chromVARmotifs")) logger.error(c("Could not load dependency: chromVARmotifs"))
-			if (spec == "Mus musculus"){
-				data("mouse_pwms_v2")
-				motifL <- c(motifL, chromVARmotifs::mouse_pwms_v2)
-			} else if (spec == "Homo sapiens"){
-				data("human_pwms_v2")
-				motifL <- c(motifL, chromVARmotifs::human_pwms_v2)
-			} else {
-				logger.warning(c("Could not find cisBP annotation for species", spec))
-			}
-		}
-		if (length(motifL) < 1) {
-			logger.error(c("No motifs were loaded. Unsupported motifs (?) :", motifs))
-		}	
-	} else if (is.element("PWMatrixList", class(motifs)) || is.element("PFMatrixList", class(motifs))) {
-		motifL <- motifs
-	} else {
-		logger.error(c("unsupported value for motifs:", motifs))
-	}	
-	res[["genome"]] <- genomeObj
-	res[["motifs"]] <- motifL
-	return(res)
+  # get the motif PWMs
+  motifL <- TFBSTools::PWMatrixList()
+  if (is.character(motifs)) {
+	if (is.element("jaspar2020", motifs)) {
+      # Added block for JASPAR2020
+      opts <- list()
+      opts["species"] <- 9606
+      opts["collection"] <- "CORE"
+      # gets the non-redundant set by default
+      mlCur <- TFBSTools::getMatrixSet(JASPAR2020::JASPAR2020, opts)
+      if (!isTRUE(all.equal(TFBSTools::name(mlCur), names(mlCur)))) {
+        names(mlCur) <- paste(names(mlCur), TFBSTools::name(mlCur), sep = "_")
+      }
+      motifL <- c(motifL, TFBSTools::toPWM(mlCur))
+    }
+    if (is.element("jaspar2018", motifs)) {
+      # copied code from chromVAR, but updated the JASPAR version
+      opts <- list()
+      opts["species"] <- spec
+      opts["collection"] <- "CORE"
+      # gets the non-redundant set by default
+      mlCur <- TFBSTools::getMatrixSet(JASPAR2018::JASPAR2018, opts)
+      if (!isTRUE(all.equal(TFBSTools::name(mlCur), names(mlCur)))) {
+        names(mlCur) <- paste(names(mlCur), TFBSTools::name(mlCur), sep = "_")
+      }
+      motifL <- c(motifL, TFBSTools::toPWM(mlCur))
+    }
+    if (is.element("jaspar_vert", motifs)) {
+      # JASPAR for all vertebrate TFBS
+      opts <- list()
+      opts["tax_group"] <- "vertebrates"
+      opts["collection"] <- "CORE"
+      # gets the non-redundant set by default
+      mlCur <- TFBSTools::getMatrixSet(JASPAR2018::JASPAR2018, opts)
+      if (!isTRUE(all.equal(TFBSTools::name(mlCur), names(mlCur)))) {
+        names(mlCur) <- paste(names(mlCur), TFBSTools::name(mlCur), sep = "_")
+      }
+      motifL <- c(motifL, TFBSTools::toPWM(mlCur))
+    }
+    if (is.element("jaspar2016", motifs)) {
+      motifL <- c(motifL, TFBSTools::toPWM(chromVAR::getJasparMotifs(species = spec)))
+    }
+    if (is.element("homer", motifs)) {
+      if (!requireNamespace("chromVARmotifs")) logger.error(c("Could not load dependency: chromVARmotifs"))
+      data("homer_pwms")
+      motifL <- c(motifL, chromVARmotifs::homer_pwms)
+    }
+    if (is.element("encode", motifs)) {
+      if (!requireNamespace("chromVARmotifs")) logger.error(c("Could not load dependency: chromVARmotifs"))
+      data("encode_pwms")
+      motifL <- c(motifL, chromVARmotifs::encode_pwms)
+    }
+    if (is.element("cisbp", motifs)) {
+      if (!requireNamespace("chromVARmotifs")) logger.error(c("Could not load dependency: chromVARmotifs"))
+      if (spec == "Mus musculus") {
+        data("mouse_pwms_v1")
+        motifL <- c(motifL, chromVARmotifs::mouse_pwms_v1)
+      } else if (spec == "Homo sapiens") {
+        data("human_pwms_v1")
+        motifL <- c(motifL, chromVARmotifs::human_pwms_v1)
+      } else {
+        logger.warning(c("Could not find cisBP annotation for species", spec))
+      }
+    }
+    if (is.element("cisbp_v2", motifs)) {
+      if (!requireNamespace("chromVARmotifs")) logger.error(c("Could not load dependency: chromVARmotifs"))
+      if (spec == "Mus musculus") {
+        data("mouse_pwms_v2")
+        motifL <- c(motifL, chromVARmotifs::mouse_pwms_v2)
+      } else if (spec == "Homo sapiens") {
+        data("human_pwms_v2")
+        motifL <- c(motifL, chromVARmotifs::human_pwms_v2)
+      } else {
+        logger.warning(c("Could not find cisBP annotation for species", spec))
+      }
+    }
+    if (length(motifL) < 1) {
+      logger.error(c("No motifs were loaded. Unsupported motifs (?) :", motifs))
+    }
+  } else if (is.element("PWMatrixList", class(motifs)) || is.element("PFMatrixList", class(motifs))) {
+    motifL <- motifs
+  } else {
+    logger.error(c("unsupported value for motifs:", motifs))
+  }
+  res[["genome"]] <- genomeObj
+  res[["motifs"]] <- motifL
+  return(res)
 }
 
 #' getMotifOccurrences
