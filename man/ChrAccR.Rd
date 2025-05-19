@@ -9,6 +9,6 @@
 Tools for analyzing chromatin accessibility data in R. Currently supports ATAC-seq and NOMe-seq data analysis.
 }
 \author{
-\strong{Maintainer}: Fabian Mueller \email{muellerf@stanford.edu} (\href{https://orcid.org/0000-0001-5809-2321}{ORCID})
+\strong{Maintainer}: Fabian Mueller \email{fabian.mueller@uni-saarland.de} (\href{https://orcid.org/0000-0001-5809-2321}{ORCID})
 
 }
