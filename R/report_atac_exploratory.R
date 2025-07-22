@@ -157,6 +157,7 @@ setMethod("createReport_exploratory",
 			mgc <- min(getConfigElement("annotationMaxGroupCount"), mgc)
 		}
 		if (is.null(specAnnotCols0)) {
+			sannot <- sannot[, colSums(!is.na(sannot)) > 0] # remove empty columns
 			# add automatically found columns to group set
 			defaultGrps <- getGroupsFromTable(sannot, cols=NULL, minGrpSize=getConfigElement("annotationMinGroupSize"), maxGrpCount=mgc)
 			specAnnotCols <- union(names(defaultGrps), specAnnotCols)
