@@ -3298,18 +3298,33 @@ setMethod("callPeaks",
 				
 				# peakFn <- file.path(callDir, paste0(fp, "_summits.bed"))
 				peakFn <- file.path(callDir, paste0(samplePrefixes[i], "_peaks.narrowPeak"))
+				shortBedFn <- file.path(callDir, paste0(samplePrefixes[i], "_ins.bed"))
 
 				# logger.status(c("[DEBUG:] Calling MACS2..."))
-				aa <- c(
-					"callpeak",
-					"-g", genomeSizeArg,
-					"--name", samplePrefixes[i],
-					"--treatment", insFns[sid],
-					"--outdir", callDir,
-					"--format", "BED",
-					argV
+				aa <- paste(
+  					shQuote(methodOpts$macs2.exec),
+ 					 "callpeak",
+ 					 "-g", shQuote(genomeSizeArg),
+ 					 "--name", shQuote(samplePrefixes[i]),
+  					"--treatment", shQuote(shortBedFn),
+  					"--outdir", shQuote(callDir),
+  					"--format", "BED",
+  					paste(shQuote(argV), collapse = " ")
+				
 				)
-				system2(methodOpts$macs2.exec, aa, wait=TRUE, stdout="", stderr="") # MACS2 log messages to console
+
+				# Write shell script with suppressed output
+				scriptFile <- tempfile(fileext = ".sh")
+				writeLines(c("#!/bin/bash", paste0(aa, " > /dev/null 2>&1")), con = scriptFile)
+				Sys.chmod(scriptFile, "755")
+
+				# Execute
+				exitCode <- system(scriptFile)
+				if (exitCode != 0) {
+  					stop(paste("MACS2 command failed for sample", sid, "with exit code", exitCode))
+				}
+
+				#system2(methodOpts$macs2.exec, aa, wait=TRUE, stdout="", stderr="") # MACS2 log messages to console
 				# system2(methodOpts$macs2.exec, aa, wait=TRUE, stdout=FALSE, stderr=FALSE) # suppress MACS2 log messages
 
 				# logger.status(c("[DEBUG:] Reading MACS2 output..."))
