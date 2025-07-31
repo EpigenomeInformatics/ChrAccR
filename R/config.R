@@ -26,7 +26,7 @@
 .config$chromVarMotifNamesForDimRed <- NULL
 .config$genesOfInterest <- NULL
 .config$annotationColumns <- NULL
-.config$annotationMinGroupSize <- 1L
+.config$annotationMinGroupSize <- 2L
 .config$annotationMaxGroupCount <- NULL
 .config$doPeakCalling <- FALSE
 .config$peakCallingProfile <- NULL
