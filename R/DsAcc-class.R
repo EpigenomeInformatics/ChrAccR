@@ -451,6 +451,12 @@ saveDsAcc <- function(.object, path, forceDiskDump=FALSE, updateDiskRef=TRUE){
 				}
 			logger.completed()
 			.object@diskDump <- TRUE
+			# in the current implementation if disk dumping is enabled, the matrices are dense
+			# if at some point sparse HDF5 arrays are supported this needs to be changed here
+			if (forceDiskDump && .object@sparseCounts){
+				logger.warning("Converted to dense matrix due to disk dumping")
+				.object@sparseCounts <- FALSE
+			}
 		}
 	}
 	# save fragment data as RDS

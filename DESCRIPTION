@@ -60,7 +60,7 @@ Imports:
     utils,
     data.table
 License: GPL-2
-Version: 0.9.25
+Version: 0.9.26
 Collate:
     'ChrAccR.R'
     'classDefs.R'

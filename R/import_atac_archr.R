@@ -6,10 +6,11 @@
 #' @param useTiling flag indicating whether to use tiling information from the ArchR project
 #' @param keepInsertionInfo flag indicating whether to maintain the insertion information in the resulting object.
 #' @param diskDump.fragments Keep fragment coordinates stored on disk rather than in main memory. This saves memory, but increases runtime and I/O.
+#' @param redDimName Name of the reduced dimensions to use as feature region set (default "IterativeLSI")
 #' @return \code{\linkS4class{DsATACsc}} object
 #' @author Fabian Mueller
 #' @export
-DsATACsc.archr <- function(ap, useTiling=TRUE, keepInsertionInfo=FALSE, diskDump.fragments=keepInsertionInfo){
+DsATACsc.archr <- function(ap, useTiling=TRUE, keepInsertionInfo=FALSE, diskDump.fragments=keepInsertionInfo, redDimName="IterativeLSI"){
 	require(ArchR)
 	if (class(ap)!="ArchRProject") logger.error("Invalid input: expected ArchRProject")
 	afs <- ArchR::getArrowFiles(ap)
@@ -118,19 +119,14 @@ DsATACsc.archr <- function(ap, useTiling=TRUE, keepInsertionInfo=FALSE, diskDump
 			logger.status("Preparing peak regions ...")
 			regionSets[["archr.peaks"]] <- peakGr
 		}
-		redDim <- ArchR::getReducedDims(ap, reducedDims="IterativeLSI", returnMatrix=FALSE)
+		redDim <- ArchR::getReducedDims(ap, reducedDims=redDimName, returnMatrix=FALSE)
 		if (is.element("LSIFeatures", names(redDim))){
 			logger.status("Preparing iterativeLSI feature regions ...")
 			featDf <- redDim$LSIFeatures
-			if (is.element(class(featDf), c("DataFrame", "DFrame")) && !is.null(tileGr)){
-				logger.info("Assuming iterativeLSI has been applied to tiling windows")
-				tileIdxL <- tapply(featDf[,"idx"], featDf[,"seqnames"], c)
-				tileGrl <- split(tileGr, seqnames(tileGr))
-				cns <- intersect(names(tileGrl), names(tileIdxL))
-				gr <- do.call("c", lapply(cns, FUN=function(chrom){
-					tileGrl[[chrom]][tileIdxL[[chrom]]]
-				}))
-				regionSets[["archr.itlsi.feats"]] <- gr
+			# featType <- redDim$useMatrix
+			if (is.element(class(featDf), c("DataFrame", "DFrame"))){
+				itlsi.feats <- muRtools::df2granges(as.data.frame(featDf), ids=NULL, chrom.col="seqnames", start.col="start", end.col="end", strand.col=NULL, coord.format="B1RI", assembly=genomeAss, doSort=FALSE)
+				regionSets[["archr.itlsi.feats"]] <- itlsi.feats
 			}
 		}
 		for (rt in names(regionSets)){
@@ -154,7 +150,7 @@ DsATACsc.archr <- function(ap, useTiling=TRUE, keepInsertionInfo=FALSE, diskDump
 		for (i in seq_along(sampleIds)){
 			sid <- sampleIds[i]
 			logger.start(c("Importing arrow file for sample", ":", sid, paste0("(", i, " of ", length(sampleIds), ")")))
-				fragGrl <- ArchR::getFragmentsFromArrow(afs[sid], cellNames=ArchR::getCellNames(ap), verbose=FALSE)
+				fragGrl <- ArchR::getFragmentsFromArrow(afs[sid], cellNames=ArchR::getCellNames(ap), verbose=FALSE, logFile=tempfile())
 				fragGrl <- muRtools::setGenomeProps(fragGrl, genomeAss, dropUnknownChrs=TRUE, onlyMainChrs=TRUE, adjChrNames=TRUE)
 				cids <- elementMetadata(fragGrl)[,"RG"]
 				cids <- gsub("#", "_", cids)

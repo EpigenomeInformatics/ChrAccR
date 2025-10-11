@@ -8,7 +8,8 @@ DsATACsc.archr(
   ap,
   useTiling = TRUE,
   keepInsertionInfo = FALSE,
-  diskDump.fragments = keepInsertionInfo
+  diskDump.fragments = keepInsertionInfo,
+  redDimName = "IterativeLSI"
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ DsATACsc.archr(
 \item{keepInsertionInfo}{flag indicating whether to maintain the insertion information in the resulting object.}
 
 \item{diskDump.fragments}{Keep fragment coordinates stored on disk rather than in main memory. This saves memory, but increases runtime and I/O.}
+
+\item{redDimName}{Name of the reduced dimensions to use as feature region set (default "IterativeLSI")}
 }
 \value{
 \code{\linkS4class{DsATACsc}} object

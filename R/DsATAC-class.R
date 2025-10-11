@@ -370,8 +370,12 @@ setMethod("getFragmentNum",
 		sampleIds=getSamples(.object)
 	) {
 		if (!all(sampleIds %in% getSamples(.object))) logger.error(c("Invalid sampleIds:", paste(setdiff(sampleIds, getSamples(.object)), collapse=", ")))
-		fgrl <- getFragmentGrl(.object, getSamples(.object), asGRangesList=FALSE)
-		res <- sapply(fgrl, length)
+
+		res <- sapply(sampleIds, FUN=function(sid){length(getFragmentGr(.object, sid))})
+		names(res) <- sampleIds
+		# too much memory footprint on large objects
+		# fgrl <- getFragmentGrl(.object, getSamples(.object), asGRangesList=FALSE)
+		# res <- sapply(fgrl, length)
 		return(res)
 	}
 )
@@ -968,6 +972,11 @@ setMethod("join",
 	) {
 		logger.warning("IN DEVELOPMENT: The join function for DsATAC objects has not extensively been tested yet")
 		objectA <- .object
+
+		# # Disk dumped objects are dense by default
+		# # TODO: check if this is generally the case
+		# if (objectA@diskDump && objectA@sparseCounts) objectA@sparseCounts <- FALSE
+		# if (objectB@diskDump && objectB@sparseCounts) objectB@sparseCounts <- FALSE
 
 		# compatibility checks
 		if (getGenome(objectA) != getGenome(objectB)) logger.error("Could not combine objects: non-matching genomes")

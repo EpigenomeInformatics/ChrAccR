@@ -42,7 +42,7 @@ prepareMotifmatchr <- function(genome, motifs) {
     if (is.element("jaspar2018", motifs)) {
       # copied code from chromVAR, but updated the JASPAR version
       opts <- list()
-      opts["species"] <- spec
+      opts["species"] <- 9606
       opts["collection"] <- "CORE"
       # gets the non-redundant set by default
       mlCur <- TFBSTools::getMatrixSet(JASPAR2018::JASPAR2018, opts)
