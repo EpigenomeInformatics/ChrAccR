@@ -562,3 +562,57 @@ estimateSharedImbalance <- function(dsObjA, dsObjB, fdrCutoff=0.01) {
     sites_tested = nrow(merged)
   ))
 }
+
+
+#' Filter for Recurrent Allele-Specific Chromatin Events
+#'
+#' Identifies SNPs that are significantly imbalanced (ASC) in a minimum number 
+#' of independent donors.
+#'
+#' @param stats_dt A data.table containing statistics (output of calcASCStatistics).
+#' @param minDonors Integer. Minimum number of independent donors required for recurrence (default 3).
+#' @param fdrCutoff Numeric. FDR threshold to define significance (default 0.05).
+#' @return A data.table containing only the recurrent ASC events.
+#' @export
+filterForRecurrence <- function(stats_dt, minDonors = 3, fdrCutoff = 0.05) {
+  
+  logger.start("Identifying Recurrent ASC Sites")
+  
+  # 1. Derive Donor ID from sampleId (If not already present)
+  if (!"donor" %in% colnames(stats_dt)) {
+    # Assuming donor ID is numeric and embedded in sampleId (e.g., 1008 in Mono_S_1008_a)
+    stats_dt[, donor := stringr::str_extract(sampleId, "\\d+")]
+    if (any(is.na(stats_dt$donor))) {
+      logger.error("Could not parse donor ID from sampleId.")
+      stop("Donor ID parsing failed.")
+    }
+  }
+
+  # 2. Identify Significant Events Per Donor
+  sig_dt <- stats_dt[fdr < fdrCutoff]
+  
+  if (nrow(sig_dt) == 0) {
+    logger.warning("No significant ASC events found below FDR cutoff.")
+    return(data.table(snpId=character(0)))
+  }
+
+  # 3. Count Recurrence Across Independent Donors
+  recurrence_counts <- sig_dt[, 
+    list(
+      n_donors_sig = length(unique(donor)),
+      mean_LFC = mean(log2FC_norm)
+    ), 
+    by = snpId
+  ]
+  
+  # 4. Apply Recurrence Filter
+  recurrent_dt <- recurrence_counts[n_donors_sig >= minDonors]
+  
+  logger.info(paste("Initial significant events:", nrow(sig_dt)))
+  logger.info(paste("Recurrent events (N>=", minDonors, "donors):", nrow(recurrent_dt)))
+
+  logger.completed()
+  
+  # Return the table of recurrent SNP IDs and their mean LFC
+  return(recurrent_dt)
+}
