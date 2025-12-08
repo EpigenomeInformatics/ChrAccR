@@ -382,63 +382,183 @@ filterASCByPeaks <- function(dsObj) {
 # Downstream Analysis
 # ==============================================================================
 
-#' Calculate ASC Statistics (Binomial Test)
+#' Calculate ASC Statistics (Conditional Bias Correction)
 #'
-#' Performs a two-sided Binomial Test against p=0.5 for every SNP.
-#' Adds P-values and FDR (Benjamini-Hochberg) to the result.
+#' Performs a two-sided Binomial Test. If global residual bias is detected, 
+#' the null hypothesis is automatically adjusted to correct for the bias.
 #'
 #' @param dsObj A DsASC object (filtered).
 #' @param minCoverage Minimum coverage to perform test (default 10).
-#' @return A data.table containing statistics for every SNP-Sample pair.
+#' @param globalProbTolerance Tolerance for deviation from p=0.5 (default 0.02).
+#' @return A data.table containing statistics, including log2FC_report which is bias-corrected only if needed.
 #' @export
-calcASCStatistics <- function(dsObj, minCoverage = 10) {
-  logger.start("Calculating ASC Statistics (Binomial Test)")
-
-  #  Fetch Data
+calcASCStatistics <- function(dsObj, minCoverage=10, globalProbTolerance=0.02) {
+  
+  logger.start("Calculating ASC Statistics (Conditional Correction)")
+  
+  # Fetch Data
   refMat <- as.matrix(getRefCounts(dsObj))
   altMat <- as.matrix(getAltCounts(dsObj))
   totalMat <- refMat + altMat
-
-  # Initialize Results Table
+  
   dt <- data.table::as.data.table(as.table(totalMat))
   setnames(dt, c("snpId", "sampleId", "total"))
-
-  # Add Ref/Alt counts
   dt$ref <- as.vector(refMat)
   dt$alt <- as.vector(altMat)
-
-  # Filter for coverage
-  dt <- dt[total >= minCoverage]
-
+  
+  dt <- dt[dt$total >= minCoverage]
+  
   if (nrow(dt) == 0) {
-    logger.warning("No sites passed coverage threshold.")
-    return(NULL)
+      logger.warning("No sites passed coverage threshold.")
+      return(NULL)
   }
-
-  # Calculate Ratios
-  dt$ratio <- dt$alt / dt$total
-  dt$log2FC <- log2((dt$alt + 1) / (dt$ref + 1))
-
-  # Vectorized Binomial Test (Two-sided)
-  # The probability of observing k successes in n trials with p=0.5
-  # P-value = 2 * pbinom(min(k, n-k), n, 0.5)
-  logger.info("Running Binomial Tests...")
-
-  min_k <- pmin(dt$ref, dt$alt)
-  dt$pVal <- 2 * pbinom(min_k, size = dt$total, prob = 0.5)
-
-  # 6. FDR Correction (Per Sample)
-  logger.info("Applying FDR correction...")
+  
+  # Conditional Bias Check
+  global_ref <- sum(as.numeric(dt$ref))
+  global_total <- sum(as.numeric(dt$total))
+  
+  # Global Alt Proportion (our observed p)
+  global_alt_prob <- sum(as.numeric(dt$alt)) / global_total
+  
+  # Decide whether to normalize
+  if (abs(global_alt_prob - 0.5) > globalProbTolerance) {
+    test_prob <- global_alt_prob
+    is_normalized <- TRUE
+    logger.warning(paste0("Bias Detected! Global Alt Prob is ", round(global_alt_prob, 3), ". Test probability set to observed bias."))
+  } else {
+    test_prob <- 0.5
+    is_normalized <- FALSE
+    logger.info("Bias not significant. Test probability set to 0.5.")
+  }
+  
+  # Calculate LFC Metrics
+  dt$log2FC_raw <- log2((dt$alt + 1) / (dt$ref + 1))
+  
+  if (is_normalized) {
+    # Calculate normalized LFC to center plots at 0
+    global_odds <- (1 - global_alt_prob) / global_alt_prob
+    dt$log2FC_report <- log2((dt$alt / dt$ref) / global_odds)
+  } else {
+    # Use raw LFC if no bias was detected
+    dt$log2FC_report <- dt$log2FC_raw
+  }
+  
+  # Binomial Test using the determined test_prob
+  logger.info(paste("Running Binomial Test against p =", round(test_prob, 3)))
+  
+  # We test Alt count (successes) vs Total count (trials)
+  p_lower <- pbinom(dt$alt, size=dt$total, prob=test_prob)
+  p_upper <- pbinom(dt$alt - 1, size=dt$total, prob=test_prob, lower.tail=FALSE)
+  
+  dt$pVal <- 2 * pmin(p_lower, p_upper)
+  dt$pVal[dt$pVal > 1] <- 1.0
+  
+  # FDR Correction
   dt[, fdr := p.adjust(pVal, method = "BH"), by = sampleId]
-
-  # 7. Add Consensus Peak Info if available
+  
+  # Add Metadata
   if (!is.null(dsObj@coord$snps$peakId)) {
     peak_map <- setNames(dsObj@coord$snps$peakId, names(dsObj@coord$snps))
     dt$peakId <- peak_map[dt$snpId]
   }
-
-  logger.info(paste("Calculated stats for", nrow(dt), "site-sample pairs."))
+  
+  # Rename the reporting LFC column
+  data.table::setnames(dt, "log2FC_report", "log2FC_norm")
+  
   logger.completed()
-
   return(dt)
+}
+
+
+#' Estimate the Proportion of Shared ASC Imbalance Effects 
+#'
+#' This function implements the Corces 2016 method to estimate the proportion of ASC 
+#' sites (significant in Cell Type A) that still show a non-zero effect in Cell Type B.
+#' It uses the Beta-Binomial posterior to calculate effect size and variance.
+#'
+#' @param dsObjA DsASC object for Cell Type A.
+#' @param dsObjB DsASC object for Cell Type B.
+#' @param fdrCutoff Numeric. FDR threshold for defining significance in Cell Type A (Default is 0.01).
+#' @return A list containing the ashR model output and the estimated proportion of shared effects.
+#' @export
+estimateSharedImbalance <- function(dsObjA, dsObjB, fdrCutoff=0.01) {
+  
+  logger.start("Estimating Shared Imbalance (ashR Method)")
+  
+  if (!requireNamespace("ashr", quietly = TRUE)) {
+    logger.error("The 'ashr' package is required for this analysis.")
+    stop("Missing package: ashr")
+  }
+  
+  # Helper function to calculate Bayesian Posterior Stats
+  calculate_posterior <- function(dsObj) {
+    # Sum counts across all samples/donors within the cell type
+    ref <- rowSums(as.matrix(getRefCounts(dsObj)), na.rm=TRUE)
+    alt <- rowSums(as.matrix(getAltCounts(dsObj)), na.rm=TRUE)
+    total <- ref + alt
+    
+    # Filter sites with zero coverage
+    valid_sites <- total > 0
+    ref <- ref[valid_sites]; alt <- alt[valid_sites]; total <- total[valid_sites]
+    
+    # Posterior Mean (mu) and Variance (sigma2) of the proportion of reference reads
+    # Posterior is Beta(r+1, a+1) 
+    mu <- (ref + 1) / (total + 2)
+    sigma2 <- ((ref + 1) * (alt + 1)) / ((total + 2)^2 * (total + 3))
+    
+    # Simple Binomial Test to identify significant sites for filtering A
+    pVal <- 2 * pmin(pbinom(ref, total, 0.5), pbinom(alt, total, 0.5))
+    fdr <- p.adjust(pVal, method="BH")
+    
+    return(data.table(
+      snpId = names(ref),
+      mu = mu,
+      sigma2 = sigma2,
+      fdr = fdr
+    ))
+  }
+  
+  # Calculate Full Bayesian Statistics for Both Cell Types
+  dtA <- calculate_posterior(dsObjA)
+  dtB <- calculate_posterior(dsObjB)
+  
+  # Define Set of ASC Sites in Cell Type A (Discovery Set)
+  sigA <- dtA[fdr < fdrCutoff]
+  logger.info(paste("Identified", nrow(sigA), "significant ASC sites in Cell Type A (FDR <", fdrCutoff, ")."))
+  
+  if (nrow(sigA) < 100) {
+    logger.warning("Fewer than 100 significant sites found. ashR power may be low.")
+  }
+  
+  # Collect Effects in Cell Type B (Test Set)
+  merged <- merge(sigA[, .(snpId)], dtB, by="snpId", suffixes = c("_A", "_B"))
+  
+  # Define the Effect Size (Bhat) and Standard Error (SE) 
+  # Effect Size (E) = mu - 0.5 (measured in Cell Type B)
+  merged[, effect_size := mu - 0.5]
+  merged[, sem := sqrt(sigma2)]
+  
+  # Filter out sites where variance is zero
+  merged <- merged[sem > 0]
+  
+  # Estimate Proportion of Nonzero Effects using ashR
+  logger.info("Running ashR to estimate shared proportion...")
+  
+  ash_res <- ashr::ash(
+    Bhat = merged$effect_size, # Effect size vector (mu - 0.5)
+    SEbetahat = merged$sem,    # Standard Error of the Effect Size
+    mixcompdist = "normal"     
+  )
+  
+  # We want the proportion that is NON-ZERO (shared/true effect).
+  pi_nonzero <- 1 - ash_res$pi[1]
+  
+  logger.info(paste0("Estimated Proportion of Shared Effects (Non-Zero): ", round(pi_nonzero, 3)))
+  logger.completed()
+  
+  return(list(
+    ash_model = ash_res,
+    sharing_estimate = pi_nonzero,
+    sites_tested = nrow(merged)
+  ))
 }

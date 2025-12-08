@@ -65,10 +65,16 @@ DsASC.gatk <- function(sampleAnnot, vcfDir, genome, diskDump = FALSE) {
       logger.warning(c("VCF missing for donor:", d))
     }
   }
-
+  # Remove NULLs
   if (length(grList) == 0) {
     logger.error("No valid VCFs found.")
     stop("Missing VCFs")
+  }
+  grList <- grList[!sapply(grList, is.null)]
+  
+  if (length(grList) == 0) {
+    muLogR::logger.error("VCFs filtered to zero SNPs for all donors in this cell type. Cannot proceed.")
+    stop("VCFs filtered to zero SNPs.")
   }
 
   masterGr <- unique(unlist(GenomicRanges::GRangesList(grList)))
@@ -205,8 +211,8 @@ DsASC.gatk <- function(sampleAnnot, vcfDir, genome, diskDump = FALSE) {
   logger.start("Creating DsASC object")
 
   if (diskDump) {
-    close(sinkRef)
-    close(sinkAlt)
+    DelayedArray::close(sinkRef)
+    DelayedArray::close(sinkAlt)
 
     countsList <- list(
       ref = as(sinkRef, "HDF5Array"),

@@ -2,19 +2,21 @@
 % Please edit documentation in R/DsASC-class.R
 \name{calcASCStatistics}
 \alias{calcASCStatistics}
-\title{Calculate ASC Statistics (Binomial Test)}
+\title{Calculate ASC Statistics (Conditional Bias Correction)}
 \usage{
-calcASCStatistics(dsObj, minCoverage = 10)
+calcASCStatistics(dsObj, minCoverage = 10, globalProbTolerance = 0.02)
 }
 \arguments{
 \item{dsObj}{A DsASC object (filtered).}
 
 \item{minCoverage}{Minimum coverage to perform test (default 10).}
+
+\item{globalProbTolerance}{Tolerance for deviation from p=0.5 (default 0.02).}
 }
 \value{
-A data.table containing statistics for every SNP-Sample pair.
+A data.table containing statistics, including log2FC_report which is bias-corrected only if needed.
 }
 \description{
-Performs a two-sided Binomial Test against p=0.5 for every SNP.
-Adds P-values and FDR (Benjamini-Hochberg) to the result.
+Performs a two-sided Binomial Test. If global residual bias is detected, 
+the null hypothesis is automatically adjusted to correct for the bias.
 }
