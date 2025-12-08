@@ -5,19 +5,19 @@
 .config$tmpDir <- tempdir()
 .config$cleanMem <- TRUE
 .config$colorSchemes <- list(
-	".default" = c("#009FE3", "#DE7E00", "#8EC041", "#FFCC00", "#951B81", "#BE1716", "#7C83B3", "#671719", "#E0CDA6", "#775725", "#000000")
+  ".default" = c("#009FE3", "#DE7E00", "#8EC041", "#FFCC00", "#951B81", "#BE1716", "#7C83B3", "#671719", "#E0CDA6", "#775725", "#000000")
 )
 .config$colorSchemesCont <- list(
-	".default" = c("#440154FF", "#472D7BFF", "#3B528BFF", "#2C728EFF", "#21908CFF", "#27AD81FF", "#5DC863FF", "#AADC32FF", "#FDE725FF"),
-	".default.div" = c("#01665E", "#35978F", "#80CDC1", "#C7EAE5", "#F5F5F5", "#F6E8C3", "#DFC27D", "#BF812D", "#8C510A"),
-	# ".default.geneactivity" = c("#e0f3db", "#a8ddb5", "#4eb3d3", "#08589e")
-	".default.geneactivity" = c('#3361A5', '#248AF3', '#14B3FF', '#88CEEF', '#C1D5DC', '#EAD397', '#FDB31A', '#E42A2A', '#A31D1D') # solarextra
+  ".default" = c("#440154FF", "#472D7BFF", "#3B528BFF", "#2C728EFF", "#21908CFF", "#27AD81FF", "#5DC863FF", "#AADC32FF", "#FDE725FF"),
+  ".default.div" = c("#01665E", "#35978F", "#80CDC1", "#C7EAE5", "#F5F5F5", "#F6E8C3", "#DFC27D", "#BF812D", "#8C510A"),
+  # ".default.geneactivity" = c("#e0f3db", "#a8ddb5", "#4eb3d3", "#08589e")
+  ".default.geneactivity" = c("#3361A5", "#248AF3", "#14B3FF", "#88CEEF", "#C1D5DC", "#EAD397", "#FDB31A", "#E42A2A", "#A31D1D") # solarextra
 )
 .config$geneModelVersions <- c(
-	"hg38"="gencode.v27",
-	"hg19"="gencode.v19",
-	"mm10"="gencode.vM16",
-	"mm9" ="gencode.vM1"
+  "hg38" = "gencode.v27",
+  "hg19" = "gencode.v19",
+  "mm10" = "gencode.vM16",
+  "mm9" = "gencode.vM1"
 )
 .config$analysisName <- "ChrAccR analysis"
 .config$regionTypes <- NULL
@@ -50,13 +50,22 @@
 .config$lolaDbPaths <- NULL
 .config$scIterativeLsiRegType <- NULL
 .config$scIterativeLsiParams <- list(
-	it0clusterResolution = 0.4,
-	it1clusterResolution = 0.4,
-	it2clusterResolution = 0.4,
-	umapParams = list(distMethod="euclidean", min_dist=0.5, n_neighbors=25)
+  it0clusterResolution = 0.4,
+  it1clusterResolution = 0.4,
+  it2clusterResolution = 0.4,
+  umapParams = list(distMethod = "euclidean", min_dist = 0.5, n_neighbors = 25)
 )
 .config$scGeneActivity <- FALSE
 .config$muPipeR_cmdr <- NULL
+
+###################################
+# Parameters for allele-specific counting
+####################################
+.config$minMapq <- 20
+.config$minDepth <- 10
+.config$maxDepth <- 5000
+.config$minBaseq <- 20
+###################################
 
 #' setConfigElement
 #'
@@ -179,18 +188,30 @@
 #'   }
 #'   \item{\bold{\code{scGeneActivity}}\code{ = FALSE}}{
 #'       For single-cell analysis only: Compute gene activity from accessibility.
-#'       Possible options are \code{"RBF"} for radial-basis-function-weighted count aggregation (default when set to \code{TRUE}) or 
+#'       Possible options are \code{"RBF"} for radial-basis-function-weighted count aggregation (default when set to \code{TRUE}) or
 #'       \code{"Cicero"} for Cicero correlation-based aggregation
 #'   }
+#'  \item{\bold{\code{minMapq}}\code{ = 20}}{
+#' 	 Minimum mapping quality for reads to be considered in allele-specific counting
+#'  }
+#'  \item{\bold{\code{minDepth}}\code{ = 10}}{
+#' 	 Minimum total read depth at a SNP for it to be considered in allele-specific counting
+#' }
+#'  \item{\bold{\code{maxDepth}}\code{ = 5000}}{
+#' 	 Maximum total read depth at a SNP for it to be considered in allele-specific counting
+#' }
+#' \item{\bold{\code{minBaseq}}\code{ = 20}}{
+#' 	 Minimum base quality for reads to be considered in allele-specific counting
+#' }
 #' }
 #' @author Fabian Mueller
 #' @export
-setConfigElement <- function(name, value){
-	if (!exists(name, .config)){
-		logger.error(c("No such configuration element:", name))
-	}
-	# TODO: implement option checker (especially for report-relevant options)
-	.config[[name]] <- value
+setConfigElement <- function(name, value) {
+  if (!exists(name, .config)) {
+    logger.error(c("No such configuration element:", name))
+  }
+  # TODO: implement option checker (especially for report-relevant options)
+  .config[[name]] <- value
 }
 
 #' getConfigElement
@@ -201,36 +222,38 @@ setConfigElement <- function(name, value){
 #' @return the value of the config item
 #' @author Fabian Mueller
 #' @export
-getConfigElement <- function(name){
-	if (!exists(name, .config)){
-		logger.warning(c("No such configuration element:", name, "--> NULL returned"))
-	}
-	.config[[name]]
+getConfigElement <- function(name) {
+  if (!exists(name, .config)) {
+    logger.warning(c("No such configuration element:", name, "--> NULL returned"))
+  }
+  .config[[name]]
 }
 
 # convert a named vector to list. If x is already a list, apply it recursively to all elements of x
-v2l <- function(x){
-	if (is.list(x)){
-		return(lapply(x, v2l))
-	} else {
-		if (length(x) > 1 && !is.null(names(x))){
-			return(as.list(x))
-		} else {
-			return(x)
-		}
-	}
+v2l <- function(x) {
+  if (is.list(x)) {
+    return(lapply(x, v2l))
+  } else {
+    if (length(x) > 1 && !is.null(names(x))) {
+      return(as.list(x))
+    } else {
+      return(x)
+    }
+  }
 }
 # convert a list with one-element entries into a vector. If not all elements of x have length 1, apply it recursively to all of them
-l2v <- function(x, ...){
-	if (!is.list(x)) return(x)
-	lls <- sapply(x, length)
-	if (all(lls<2)){
-		return(unlist(x, recursive=FALSE))
-	} else {
-		idx <- lls > 1
-		x[idx] <- lapply(x[idx], l2v)
-		return(x)
-	}
+l2v <- function(x, ...) {
+  if (!is.list(x)) {
+    return(x)
+  }
+  lls <- sapply(x, length)
+  if (all(lls < 2)) {
+    return(unlist(x, recursive = FALSE))
+  } else {
+    idx <- lls > 1
+    x[idx] <- lapply(x[idx], l2v)
+    return(x)
+  }
 }
 #' saveConfig
 #'
@@ -241,14 +264,14 @@ l2v <- function(x, ...){
 #'
 #' @author Fabian Mueller
 #' @export
-saveConfig <- function(dest){
-	cfgL <- as.list(.config)
-	# toJSON does not allow for named vectors (https://github.com/jeroen/jsonlite/issues/76). Here's a workaround
-	namedVectors <- intersect(names(cfgL), c("geneModelVersions", "colorSchemes"))
-	for (nn in namedVectors){
-		cfgL[[nn]] <- v2l(cfgL[[nn]])
-	}
-	cat(jsonlite::toJSON(cfgL, pretty=TRUE, null="null",na="string"), file=dest)
+saveConfig <- function(dest) {
+  cfgL <- as.list(.config)
+  # toJSON does not allow for named vectors (https://github.com/jeroen/jsonlite/issues/76). Here's a workaround
+  namedVectors <- intersect(names(cfgL), c("geneModelVersions", "colorSchemes"))
+  for (nn in namedVectors) {
+    cfgL[[nn]] <- v2l(cfgL[[nn]])
+  }
+  cat(jsonlite::toJSON(cfgL, pretty = TRUE, null = "null", na = "string"), file = dest)
 }
 
 #' loadConfig
@@ -260,19 +283,19 @@ saveConfig <- function(dest){
 #'
 #' @author Fabian Mueller
 #' @export
-loadConfig <- function(cfgFile){
-	# toJSON does not allow for named vectors (https://github.com/jeroen/jsonlite/issues/76). Here's a workaround
-	namedVectors <- c("geneModelVersions", "colorSchemes")
+loadConfig <- function(cfgFile) {
+  # toJSON does not allow for named vectors (https://github.com/jeroen/jsonlite/issues/76). Here's a workaround
+  namedVectors <- c("geneModelVersions", "colorSchemes")
 
-	cfgList <- jsonlite::fromJSON(cfgFile)
-	for (nn in names(cfgList)){
-		if (is.element(nn, namedVectors)){
-			cfgList[[nn]] <- l2v(cfgList[[nn]])
-		}
-		if (is.element(nn,ls(.config))){
-			.config[[nn]] <- cfgList[[nn]]
-		} else {
-			logger.warning(c("Ignoring unknown item '",nn,"' in when loading configuration from file",cfgFile))
-		}
-	}
+  cfgList <- jsonlite::fromJSON(cfgFile)
+  for (nn in names(cfgList)) {
+    if (is.element(nn, namedVectors)) {
+      cfgList[[nn]] <- l2v(cfgList[[nn]])
+    }
+    if (is.element(nn, ls(.config))) {
+      .config[[nn]] <- cfgList[[nn]]
+    } else {
+      logger.warning(c("Ignoring unknown item '", nn, "' in when loading configuration from file", cfgFile))
+    }
+  }
 }

@@ -36,7 +36,7 @@ adapted from \code{seqLogo::seqLogo()}
 \examples{
 \dontrun{
 mm <- prepareMotifmatchr("hg38", "jaspar")$motifs[["MA0137.3_STAT1"]]
-hmSeqLogo(mm, unit(0.5, "npc"), unit(0.5, "npc"), 0.5, 0.5, ic.scale=TRUE)
+hmSeqLogo(mm, unit(0.5, "npc"), unit(0.5, "npc"), 0.5, 0.5, ic.scale = TRUE)
 }
 }
 \author{

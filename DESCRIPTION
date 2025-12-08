@@ -61,32 +61,34 @@ Imports:
     data.table
 License: GPL-2
 Version: 0.9.25
-Collate:
+VignetteBuilder: knitr
+Encoding: UTF-8
+RoxygenNote: 7.3.3
+Collate: 
     'ChrAccR.R'
-    'classDefs.R'
-    'utils.R'
-    'config.R'
-    'utils_atac.R'
-    'utils_motifs.R'
-    'annotation.R'
-    'utils_chromVAR.R'
-    'utils_filehandling.R'
     'DsAcc-class.R'
+    'DsASC-class.R'
     'DsATAC-class.R'
     'DsATACsc-class.R'
     'DsNOMe-class.R'
+    'annotation.R'
+    'classDefs.R'
+    'config.R'
+    'differential.R'
+    'differential_nome.R'
+    'importTools_nome.R'
+    'import_asc.R'
     'import_atac.R'
     'import_atac_10x.R'
     'import_atac_archr.R'
-    'importTools_nome.R'
-    'differential_nome.R'
-    'differential.R'
-    'report_atac_summary.R'
+    'report_atac_differential.R'
+    'report_atac_exploratory.R'
     'report_atac_filtering.R'
     'report_atac_normalization.R'
-    'report_atac_exploratory.R'
-    'report_atac_differential.R'
+    'report_atac_summary.R'
+    'utils.R'
+    'utils_atac.R'
+    'utils_chromVAR.R'
+    'utils_filehandling.R'
+    'utils_motifs.R'
     'workflow.R'
-VignetteBuilder: knitr
-Encoding: UTF-8
-RoxygenNote: 7.2.3
