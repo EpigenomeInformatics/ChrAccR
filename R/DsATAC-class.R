@@ -2327,6 +2327,7 @@ setMethod("getInsertionKmerFreq",
 		res <- do.call("cbind", lapply(samples, FUN=function(sid){
 			logger.status(c("Preparing insertion kmer-frequencies for sample", sid))
 			insGr <-  trim(resize(shift(getInsertionSites(.object, sid)[[1]], -ceiling(k/2)), width=k, fix="start", ignore.strand=TRUE))
+			BiocGenerics::strand(insGr) <- "*" #Make all strands *, causing an error in footprints
 			kmerFreq <- Biostrings::oligonucleotideFrequency(Biostrings::Views(go, insGr), width=k, simplify.as="collapsed")
 			return(kmerFreq)
 		}))
