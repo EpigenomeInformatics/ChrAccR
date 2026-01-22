@@ -12,7 +12,7 @@
   samples = getSamples(.object),
   motifFlank = 250L,
   type = ".genome",
-  motifDb = "jaspar"
+  motifDb = "jaspar2018"
 )
 }
 \arguments{

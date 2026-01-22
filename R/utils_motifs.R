@@ -16,7 +16,7 @@
 #' @export
 prepareMotifmatchr <- function(genome, motifs) {
   res <- list()
-  motifs <- 
+  motifs <- tolower(motifs)
   # get the species name and the genome sequence object based on the object
   genomeObj <- genome
   if (!is.element("BSgenome", class(genomeObj))) {
