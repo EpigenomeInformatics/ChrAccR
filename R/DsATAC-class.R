@@ -2751,8 +2751,8 @@ setMethod("getMotifFootprints",
 		logger.start("Finding motif occurrences")
 			motifObj <- NULL
 			motifKmerFreqML <- NULL # region window k-mer frequencies for bias correction
-			annoPkg <- ChrAccR:::getChrAccRAnnotationPackage(.object@genome)
-			if (!is.character(annoPkg) & is.character(motifDb)){
+			annoPkg <- getChrAccRAnnotationPackage(.object@genome)
+			if (!is.null(annoPkg) & is.character(motifDb)){
 				logger.info(c("Using annotation from package:", annoPkg))
 				motifObj        <- get("getMotifAnnotation", asNamespace(annoPkg))(anno=motifDb, type="motifs")
 				motifGrl        <- get("getMotifAnnotation", asNamespace(annoPkg))(anno=motifDb, type="motifOccGrl")
@@ -2765,7 +2765,7 @@ setMethod("getMotifFootprints",
 			} else {
 				logger.info("Using motifmatchr")
 				if (is.character(motifDb)){
-					motifObj <- prepareMotifmatchr(.object@genome, "jaspar2018")$motifs # currently only used for motif logo plotting. Could be omitted if that is not desired
+					motifObj <- prepareMotifmatchr(.object@genome, motifDb)$motifs # currently only used for motif logo plotting. Could be omitted if that is not desired
 				}
 				motifGrl <- getMotifOccurrences(motifNames, motifDb=motifDb, genome=.object@genome)
 			}
