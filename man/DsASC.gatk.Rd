@@ -4,7 +4,7 @@
 \alias{DsASC.gatk}
 \title{Import Allele-Specific Chromatin Data (GATK VCFs + BAM Pileup)}
 \usage{
-DsASC.gatk(sampleAnnot, vcfDir, genome, diskDump = FALSE)
+DsASC.gatk(sampleAnnot, vcfDir, genome, diskDump = FALSE, masterGr = NULL)
 }
 \arguments{
 \item{sampleAnnot}{Data frame with sample annotation. Must contain 'sampleId', 'bamFilename', 'donor'.}
@@ -14,6 +14,14 @@ DsASC.gatk(sampleAnnot, vcfDir, genome, diskDump = FALSE)
 \item{genome}{Character string containing genome assembly (e.g. "hg38").}
 
 \item{diskDump}{Logical. If TRUE, matrices are realized as HDF5 arrays.}
+
+\item{masterGr}{Optional pre-built master SNP GRanges (from
+\code{buildMasterSNPs}). If supplied, the per-VCF master
+construction is skipped and counts are stored against this
+shared site set. Use this so per-cell-type objects built in
+separate jobs remain row-aligned for cross-cell-type
+comparison (Fig 4d). Must carry REF, ALT, snpId metadata and
+names() set to snpId (as buildMasterSNPs produces).}
 }
 \value{
 A \code{\linkS4class{DsASC}} object.
@@ -22,4 +30,10 @@ A \code{\linkS4class{DsASC}} object.
 This function imports ASC data by counting reads at heterozygous SNP sites
 defined in donor-specific VCF files. It uses \code{Rsamtools::pileup} to
 quantify reference and alternative alleles.
+}
+\details{
+Counts are stored against a union ("master") SNP list spanning all donors,
+but each sample is counted ONLY at sites heterozygous in its own donor.
+Sites outside a sample's donor het set are set to NA so they are never tested
+(prevents homozygous genotypes from being mis-called as allele-specific).
 }

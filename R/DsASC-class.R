@@ -419,6 +419,14 @@ annotateASCSites <- function(dsObj, peakGr = NULL) {
 
   snpGr <- dsObj@coord$snps
 
+  # Guard: empty SNP set (e.g. a low-coverage cell type where filterLowCovg
+  # removed everything). Return unchanged rather than erroring on a 0-length GRanges.
+  if (is.null(snpGr) || length(snpGr) == 0) {
+    logger.warning("No SNPs present (empty object) - skipping peak annotation.")
+    logger.completed()
+    return(dsObj)
+  }
+
   ov <- GenomicRanges::findOverlaps(snpGr, peakGr)
 
   GenomicRanges::mcols(snpGr)$peakId <- NA_character_
@@ -476,19 +484,28 @@ filterASCByPeaks <- function(dsObj) {
 # Downstream Analysis
 # ==============================================================================
 
-#' Calculate ASC Statistics (Conditional Bias Correction)
+#' Calculate ASC Statistics (Calderon et al. 2019)
 #'
-#' Performs a two-sided Binomial Test. If global residual bias is detected,
-#' the null hypothesis is automatically adjusted to correct for the bias.
+#' Tests for allele-specific chromatin accessibility at each heterozygous site,
+#' following Calderon et al., Nat. Genet. 2019. After WASP filtering (which
+#' removes reference mapping bias), each site is tested with a two-sided
+#' binomial test against the null hypothesis of a 50:50 ref:alt split.
+#' Multiple-testing correction (Benjamini-Hochberg) is applied PER SAMPLE.
 #'
-#' @param dsObj A DsASC object (filtered).
-#' @param minCoverage Minimum coverage to perform test (default 10).
-#' @param globalProbTolerance Tolerance for deviation from p=0.5 (default 0.02).
-#' @return A data.table containing statistics, including log2FC_norm which is bias-corrected only if needed.
+#' Note: the null is a fixed p = 0.5. WASP is responsible for removing mapping
+#' bias upstream; re-centering the null on the observed (pooled) allele fraction
+#' is NOT done, because (a) it conflates allele identity across donors, and
+#' (b) it would calibrate the null against the very ASC signal being detected.
+#'
+#' @param dsObj A DsASC object (WASP-filtered, peak-annotated).
+#' @param minCoverage Minimum total coverage (ref+alt) required to test a site
+#'                    in a sample (default 10).
+#' @return A data.table with one row per tested (snp x sample): ref, alt, total,
+#'         log2FC (alt vs ref effect size), pVal, fdr (per-sample BH), and peakId.
 #' @export
-calcASCStatistics <- function(dsObj, minCoverage = 10, globalProbTolerance = 0.02) {
+calcASCStatistics <- function(dsObj, minCoverage = 10) {
 
-  logger.start("Calculating ASC Statistics (Conditional Correction)")
+  logger.start("Calculating ASC Statistics (binomial test vs p = 0.5)")
 
   refMat   <- as.matrix(getRefCounts(dsObj))
   altMat   <- as.matrix(getAltCounts(dsObj))
@@ -499,6 +516,7 @@ calcASCStatistics <- function(dsObj, minCoverage = 10, globalProbTolerance = 0.0
   dt$ref <- as.vector(refMat)
   dt$alt <- as.vector(altMat)
 
+  # Only test sites with sufficient coverage IN THAT SAMPLE
   dt <- dt[dt$total >= minCoverage]
 
   if (nrow(dt) == 0) {
@@ -506,50 +524,30 @@ calcASCStatistics <- function(dsObj, minCoverage = 10, globalProbTolerance = 0.0
     return(NULL)
   }
 
-  # Conditional Bias Check
-  global_total    <- sum(as.numeric(dt$total))
-  global_alt_prob <- sum(as.numeric(dt$alt)) / global_total
+  # Effect size: log2 ratio of alt vs ref (pseudocount-stabilised).
+  # Reported for interpretation only; not used in the test.
+  dt$log2FC <- log2((dt$alt + 1) / (dt$ref + 1))
 
-  if (abs(global_alt_prob - 0.5) > globalProbTolerance) {
-    test_prob     <- global_alt_prob
-    is_normalized <- TRUE
-    logger.warning(paste0("Bias Detected! Global Alt Prob is ", round(global_alt_prob, 3),
-                          ". Test probability set to observed bias."))
-  } else {
-    test_prob     <- 0.5
-    is_normalized <- FALSE
-    logger.info("Bias not significant. Test probability set to 0.5.")
-  }
-
-  # LFC Metrics
-  dt$log2FC_raw <- log2((dt$alt + 1) / (dt$ref + 1))
-
-  if (is_normalized) {
-    global_odds      <- (1 - global_alt_prob) / global_alt_prob
-    dt$log2FC_report <- log2((dt$alt / dt$ref) / global_odds)
-  } else {
-    dt$log2FC_report <- dt$log2FC_raw
-  }
-
-  # Binomial Test
-  logger.info(paste("Running Binomial Test against p =", round(test_prob, 3)))
-  p_lower <- pbinom(dt$alt,     size = dt$total, prob = test_prob)
-  p_upper <- pbinom(dt$alt - 1, size = dt$total, prob = test_prob, lower.tail = FALSE)
+  # Two-sided binomial test against a fixed null of p = 0.5 (paper's approach).
+  logger.info("Running two-sided binomial test against p = 0.5")
+  p_lower <- pbinom(dt$alt,     size = dt$total, prob = 0.5)
+  p_upper <- pbinom(dt$alt - 1, size = dt$total, prob = 0.5, lower.tail = FALSE)
 
   dt$pVal <- 2 * pmin(p_lower, p_upper)
   dt$pVal[dt$pVal > 1] <- 1.0
 
-  # FDR per sample
+  # Benjamini-Hochberg FDR computed PER SAMPLE (as in the paper).
   dt[, fdr := p.adjust(pVal, method = "BH"), by = sampleId]
 
-  # Peak metadata
+  # Attach peak annotation if present
   if (!is.null(dsObj@coord$snps$peakId)) {
-    peak_map   <- setNames(dsObj@coord$snps$peakId, names(dsObj@coord$snps))
-    dt$peakId  <- peak_map[dt$snpId]
+    peak_map  <- setNames(dsObj@coord$snps$peakId, names(dsObj@coord$snps))
+    dt$peakId <- peak_map[dt$snpId]
   }
 
-  data.table::setnames(dt, "log2FC_report", "log2FC_norm")
-
+  n_sig <- nrow(dt[fdr < 0.1])
+  logger.info(paste0("Tested ", nrow(dt), " site-sample observations; ",
+                     n_sig, " significant at FDR < 0.1."))
   logger.completed()
   return(dt)
 }

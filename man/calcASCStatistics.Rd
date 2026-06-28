@@ -2,21 +2,30 @@
 % Please edit documentation in R/DsASC-class.R
 \name{calcASCStatistics}
 \alias{calcASCStatistics}
-\title{Calculate ASC Statistics (Conditional Bias Correction)}
+\title{Calculate ASC Statistics (Calderon et al. 2019)}
 \usage{
-calcASCStatistics(dsObj, minCoverage = 10, globalProbTolerance = 0.02)
+calcASCStatistics(dsObj, minCoverage = 10)
 }
 \arguments{
-\item{dsObj}{A DsASC object (filtered).}
+\item{dsObj}{A DsASC object (WASP-filtered, peak-annotated).}
 
-\item{minCoverage}{Minimum coverage to perform test (default 10).}
-
-\item{globalProbTolerance}{Tolerance for deviation from p=0.5 (default 0.02).}
+\item{minCoverage}{Minimum total coverage (ref+alt) required to test a site
+in a sample (default 10).}
 }
 \value{
-A data.table containing statistics, including log2FC_norm which is bias-corrected only if needed.
+A data.table with one row per tested (snp x sample): ref, alt, total,
+        log2FC (alt vs ref effect size), pVal, fdr (per-sample BH), and peakId.
 }
 \description{
-Performs a two-sided Binomial Test. If global residual bias is detected,
-the null hypothesis is automatically adjusted to correct for the bias.
+Tests for allele-specific chromatin accessibility at each heterozygous site,
+following Calderon et al., Nat. Genet. 2019. After WASP filtering (which
+removes reference mapping bias), each site is tested with a two-sided
+binomial test against the null hypothesis of a 50:50 ref:alt split.
+Multiple-testing correction (Benjamini-Hochberg) is applied PER SAMPLE.
+}
+\details{
+Note: the null is a fixed p = 0.5. WASP is responsible for removing mapping
+bias upstream; re-centering the null on the observed (pooled) allele fraction
+is NOT done, because (a) it conflates allele identity across donors, and
+(b) it would calibrate the null against the very ASC signal being detected.
 }
