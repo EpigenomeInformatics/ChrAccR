@@ -14,9 +14,9 @@ calcASCStatistics(dsObj, minCoverage = 10, globalProbTolerance = 0.02)
 \item{globalProbTolerance}{Tolerance for deviation from p=0.5 (default 0.02).}
 }
 \value{
-A data.table containing statistics, including log2FC_report which is bias-corrected only if needed.
+A data.table containing statistics, including log2FC_norm which is bias-corrected only if needed.
 }
 \description{
-Performs a two-sided Binomial Test. If global residual bias is detected, 
+Performs a two-sided Binomial Test. If global residual bias is detected,
 the null hypothesis is automatically adjusted to correct for the bias.
 }

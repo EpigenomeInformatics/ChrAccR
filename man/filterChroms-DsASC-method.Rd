@@ -12,7 +12,7 @@
 \item{.object}{\code{\linkS4class{DsASC}} object}
 
 \item{keep}{Character vector of chromosomes to keep. If NULL (default), all are kept unless 'remove' is specified.
-Special value "standard" keeps chr1-22, X, Y (human) or chr1-19, X, Y.}
+Special value "standard" keeps chr1-22, X, Y.}
 
 \item{remove}{Character vector of chromosomes to remove (e.g., "chrM").}
 }

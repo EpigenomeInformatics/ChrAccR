@@ -9,7 +9,7 @@ filterForRecurrence(stats_dt, minDonors = 3, fdrCutoff = 0.05)
 \arguments{
 \item{stats_dt}{A data.table containing statistics (output of calcASCStatistics).}
 
-\item{minDonors}{Integer. Minimum number of independent donors required for recurrence (default 3).}
+\item{minDonors}{Integer. Minimum number of independent donors required (default 3).}
 
 \item{fdrCutoff}{Numeric. FDR threshold to define significance (default 0.05).}
 }
@@ -17,6 +17,6 @@ filterForRecurrence(stats_dt, minDonors = 3, fdrCutoff = 0.05)
 A data.table containing only the recurrent ASC events.
 }
 \description{
-Identifies SNPs that are significantly imbalanced (ASC) in a minimum number 
+Identifies SNPs that are significantly imbalanced (ASC) in a minimum number
 of independent donors.
 }

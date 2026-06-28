@@ -4,12 +4,13 @@
 \alias{annotateASCSites}
 \title{Annotate DsASC SNPs with Consensus Peaks}
 \usage{
-annotateASCSites(dsObj, peakGr)
+annotateASCSites(dsObj, peakGr = NULL)
 }
 \arguments{
 \item{dsObj}{A DsASC object.}
 
-\item{peakGr}{A GRanges object containing consensus peaks. Must have unique names().}
+\item{peakGr}{A GRanges object containing consensus peaks. Must have unique names().
+If NULL, uses the peaks already stored in \code{coord$peaks}.}
 }
 \value{
 A DsASC object with updated @coord metadata.
@@ -17,4 +18,7 @@ A DsASC object with updated @coord metadata.
 \description{
 Overlaps the SNPs in a DsASC object with a set of Consensus Peaks (GRanges).
 Assigns the Peak ID to the SNP metadata.
+}
+\author{
+Irem B. GUNDUZ
 }

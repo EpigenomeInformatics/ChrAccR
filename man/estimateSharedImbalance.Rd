@@ -11,13 +11,12 @@ estimateSharedImbalance(dsObjA, dsObjB, fdrCutoff = 0.01)
 
 \item{dsObjB}{DsASC object for Cell Type B.}
 
-\item{fdrCutoff}{Numeric. FDR threshold for defining significance in Cell Type A (Default is 0.01).}
+\item{fdrCutoff}{Numeric. FDR threshold for defining significance in Cell Type A (Default 0.01).}
 }
 \value{
-A list containing the ashR model output and the estimated proportion of shared effects.
+A list with the ashR model output and the estimated proportion of shared effects.
 }
 \description{
-This function implements the Corces 2016 method to estimate the proportion of ASC 
-sites (significant in Cell Type A) that still show a non-zero effect in Cell Type B.
-It uses the Beta-Binomial posterior to calculate effect size and variance.
+Estimates the proportion of ASC sites (significant in Cell Type A) that still
+show a non-zero effect in Cell Type B, using the Beta-Binomial posterior and ashR.
 }

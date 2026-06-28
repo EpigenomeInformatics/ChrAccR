@@ -11,7 +11,8 @@
 
 \item{thresh}{Integer. Minimum total coverage required per site per sample.}
 
-\item{reqSamples}{Numeric. Minimum number or fraction of samples that must meet the coverage threshold.}
+\item{reqSamples}{Numeric. Minimum number (>=1) or fraction (<1) of samples
+that must meet the coverage threshold.}
 }
 \description{
 filterLowCovg-methods (DsASC)

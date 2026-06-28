@@ -16,3 +16,6 @@ A subsetted DsASC object.
 Removes SNPs that do not overlap with any consensus peak.
 This reduces dataset size and focuses analysis on regulatory regions.
 }
+\author{
+Irem B. GUNDUZ
+}
