@@ -1,3 +1,6 @@
+#' @include DsASC-class.R
+NULL
+
 #' Build a shared master heterozygous-SNP list across donors
 #'
 #' Reads donor VCFs once and returns a sorted, de-duplicated GRanges of

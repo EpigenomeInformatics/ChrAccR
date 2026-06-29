@@ -1,7 +1,9 @@
+#' @include DsAcc-class.R
+NULL
+
 # ==============================================================================
 # CLASS DEFINITION
 # ==============================================================================
-#' @include DsAcc-class.R
 #'
 #' DsASC Class
 #'
@@ -611,7 +613,7 @@ estimateSharedImbalance <- function(dsObjA, dsObjB, fdrCutoff = 0.01) {
     mixcompdist = "normal"
   )
 
-  pi_nonzero <- 1 - ash_res$pi[1]
+  pi_nonzero <- 1 - ashr::get_pi0(ash_res)   # FIXED: was ash_res$pi[1] (NULL in current ashr)
 
   logger.info(paste0("Estimated Proportion of Shared Effects (Non-Zero): ", round(pi_nonzero, 3)))
   logger.completed()
@@ -668,4 +670,390 @@ filterForRecurrence <- function(stats_dt, minDonors = 3, fdrCutoff = 0.05) {
   logger.completed()
 
   return(recurrent_dt)
+}
+
+#' @include DsASC-class.R
+NULL
+
+# ==============================================================================
+# DsASC-analysis.R
+# Reusable analysis helpers for allele-specific chromatin (DsASC) objects.
+# These were previously duplicated across validation scripts; centralising them
+# keeps method definitions in one place.
+#
+# Style: plain exported functions (matches ChrAccR plotting/analysis helpers).
+# ==============================================================================
+
+#' @import data.table
+#' @importFrom GenomicRanges seqnames start
+NULL
+
+# ------------------------------------------------------------------------------
+# Loading / merging per-cell-type array outputs
+# ------------------------------------------------------------------------------
+
+#' Merge per-cell-type DsASC objects into unified count matrices
+#'
+#' Reads ds_asc_*.rds produced by the per-cell-type SLURM array and rebuilds
+#' aligned ref/alt matrices (union of SNPs x all samples), plus combined
+#' sample annotation. Empties (_EMPTY.rds) are skipped.
+#'
+#' @param dir          Directory containing ds_asc_*.rds.
+#' @param pattern      File pattern (default "^ds_asc_.*\\.rds$").
+#' @return list(ref, alt, annot, snpIds) with ref/alt integer matrices.
+#' @export
+mergeDsASCArray <- function(dir, pattern = "^ds_asc_.*\\.rds$") {
+  files <- list.files(dir, pattern = pattern, full.names = TRUE)
+  files <- files[!grepl("_EMPTY\\.rds$", files)]
+  if (length(files) == 0) stop(paste("No DsASC array files in", dir))
+
+  annot_list <- list(); ref_list <- list(); alt_list <- list(); all_snps <- character()
+  for (f in files) {
+    ds <- readRDS(f)
+    annot_list[[length(annot_list)+1]] <- data.table::as.data.table(getSampleAnnot(ds))
+    r <- as.matrix(getRefCounts(ds)); a <- as.matrix(getAltCounts(ds))
+    ref_list[[length(ref_list)+1]] <- r; alt_list[[length(alt_list)+1]] <- a
+    all_snps <- c(all_snps, rownames(r))
+  }
+  all_snps <- unique(all_snps)
+  annot <- unique(data.table::rbindlist(annot_list, fill = TRUE))
+  annot[, donor := as.character(donor)]
+
+  ref <- matrix(0L, length(all_snps), nrow(annot), dimnames = list(all_snps, annot$sampleId))
+  alt <- matrix(0L, length(all_snps), nrow(annot), dimnames = list(all_snps, annot$sampleId))
+  for (i in seq_along(ref_list)) {
+    r <- ref_list[[i]]; a <- alt_list[[i]]
+    ref[rownames(r), colnames(r)] <- r
+    alt[rownames(a), colnames(a)] <- a
+  }
+  list(ref = ref, alt = alt, annot = annot, snpIds = all_snps)
+}
+
+# ------------------------------------------------------------------------------
+# Core statistics
+# ------------------------------------------------------------------------------
+
+#' Per-site binomial posterior + FDR for a ref/alt vector
+#'
+#' @param refV,altV  integer vectors of reference / alternative counts.
+#' @return list(total, fdr) with BH-adjusted two-sided binomial p.
+#' @export
+ascSitePosterior <- function(refV, altV) {
+  total <- refV + altV
+  pV <- 2 * pmin(stats::pbinom(refV, total, 0.5), stats::pbinom(altV, total, 0.5))
+  pV[total == 0] <- 1
+  list(total = total, fdr = stats::p.adjust(pV, method = "BH"))
+}
+
+#' Aggregate ref/alt across a set of samples (columns)
+#'
+#' @param ref,alt   count matrices [snp x sample].
+#' @param sampleIds samples to sum over.
+#' @return list(ref, alt) row sums.
+#' @export
+ascAggregate <- function(ref, alt, sampleIds) {
+  vs <- intersect(sampleIds, colnames(ref))
+  if (length(vs) == 0) return(list(ref = numeric(nrow(ref)), alt = numeric(nrow(alt))))
+  list(ref = rowSums(ref[, vs, drop = FALSE], na.rm = TRUE),
+       alt = rowSums(alt[, vs, drop = FALSE], na.rm = TRUE))
+}
+
+#' Estimate shared-imbalance proportion between two count sets (ashR)
+#'
+#' Given A-significant sites, estimates the proportion with a non-zero effect in
+#' B using ashR (uses get_pi0; robust across ashr versions).
+#'
+#' @param refA,altA,refB,altB  count vectors aligned by SNP.
+#' @param fdrA       FDR cutoff defining significance in A (default 0.01).
+#' @param minReadsB  reads in B below which a site is "inaccessible" (default 4).
+#' @return list(n_total, Inaccessible, NotShared, Shared) proportions.
+#' @export
+ascSharing <- function(refA, altA, refB, altB, fdrA = 0.01, minReadsB = 4) {
+  postA <- ascSitePosterior(refA, altA)
+  sigA  <- which(postA$fdr < fdrA & postA$total > 0)
+  if (length(sigA) == 0) return(NULL)
+
+  totalB <- (refB + altB)[sigA]
+  inaccessible <- totalB < minReadsB
+  accIdx <- sigA[!inaccessible]
+  shared_prop <- NA_real_
+
+  if (length(accIdx) >= 10) {
+    tB <- refB[accIdx] + altB[accIdx]
+    effect <- ((refB[accIdx] + 1) / (tB + 2)) - 0.5
+    sem <- sqrt(((refB[accIdx] + 1) * (altB[accIdx] + 1)) / ((tB + 2)^2 * (tB + 3)))
+    keep <- sem > 0
+    if (sum(keep) >= 10) {
+      sp <- tryCatch(1 - ashr::get_pi0(ashr::ash(effect[keep], sem[keep], mixcompdist = "normal")),
+                     error = function(e) NA_real_)
+      if (length(sp) == 1 && is.finite(sp)) shared_prop <- sp
+    }
+  }
+  n_total <- length(sigA); n_inacc <- sum(inaccessible); n_acc <- n_total - n_inacc
+  n_shared <- if (is.na(shared_prop)) 0L else round(shared_prop * n_acc)
+  list(n_total = n_total,
+       Inaccessible = n_inacc / n_total,
+       NotShared = (n_acc - n_shared) / n_total,
+       Shared = n_shared / n_total)
+}
+
+# ------------------------------------------------------------------------------
+# Donor utilities
+# ------------------------------------------------------------------------------
+
+#' Rank donors by sequencing depth at tested sites
+#' @export
+ascDonorDepth <- function(ref, alt, annot) {
+  data.table::rbindlist(lapply(unique(annot$donor), function(d) {
+    s <- intersect(annot[donor == d, sampleId], colnames(ref))
+    data.table::data.table(donor = d,
+      total_reads = sum(ref[, s, drop = FALSE]) + sum(alt[, s, drop = FALSE]))
+  }))[order(-total_reads)]
+}
+
+#' Best donor for a SNP: het there (per master membership) and most reads
+#'
+#' @param sn          snpId.
+#' @param ref,alt     count matrices.
+#' @param annot       sample annotation (with donor).
+#' @param membership  optional named list snpId -> donors het there.
+#' @return donor id, or NA.
+#' @export
+ascBestDonor <- function(sn, ref, alt, annot, membership = NULL) {
+  donor_ids <- unique(annot$donor)
+  cand <- if (!is.null(membership) && !is.null(membership[[sn]]))
+            as.character(membership[[sn]]) else donor_ids
+  cand <- intersect(cand, donor_ids)
+  if (length(cand) == 0) return(NA_character_)
+  depths <- sapply(cand, function(d) {
+    s <- intersect(annot[donor == d, sampleId], colnames(ref))
+    if (length(s) == 0) return(0)
+    sum(ref[sn, s]) + sum(alt[sn, s])
+  })
+  if (max(depths) <= 0) return(NA_character_)
+  cand[which.max(depths)]
+}
+
+#' Stratify a pair of (cellType, stimulus) groups into the 4 sharing strata
+#' @export
+ascStratum <- function(cellA, condA, cellB, condB) {
+  same_lin <- cellA == cellB; same_cond <- condA == condB
+  data.table::fifelse(same_lin & same_cond, "Same lineage & condition",
+   data.table::fifelse(same_lin & !same_cond, "Same lineage, diff condition",
+    data.table::fifelse(!same_lin & same_cond, "Diff lineage, same condition",
+                                               "Diff lineage & condition")))
+}
+
+#' @include DsASC-class.R
+NULL
+
+# ==============================================================================
+# DsASC-plots.R
+# Plotting functions for allele-specific chromatin (DsASC) objects.
+#
+# Style: plain exported functions returning ggplot objects (matches ChrAccR's
+# existing plotting helpers, which are functions rather than S4 methods).
+# Each takes a DsASC object as the first argument.
+#
+# Depends on calcASCStatistics() from DsASC-class.R.
+# ==============================================================================
+
+#' @import ggplot2
+#' @importFrom data.table as.data.table setnames := data.table
+NULL
+
+# ------------------------------------------------------------------------------
+# Internal: build a per-sample allelic-balance table for a set of sites
+# ------------------------------------------------------------------------------
+.ascSiteTable <- function(dsObj, snpIds, minReads = 4) {
+  ref <- as.matrix(getRefCounts(dsObj))
+  alt <- as.matrix(getAltCounts(dsObj))
+
+  miss <- setdiff(snpIds, rownames(ref))
+  if (length(miss) > 0) {
+    logger.warning(paste(length(miss), "requested SNP(s) not in object; dropping."))
+    snpIds <- intersect(snpIds, rownames(ref))
+  }
+  if (length(snpIds) == 0) stop("None of the requested SNPs are present.")
+
+  annot <- as.data.table(getSampleAnnot(dsObj))
+  rows <- list()
+  for (sn in snpIds) {
+    r <- ref[sn, ]; a <- alt[sn, ]
+    total <- r + a
+    refFrac <- r / total
+    # Wilson-ish 95% CI from read depth (binomial)
+    se <- sqrt(refFrac * (1 - refFrac) / total)
+    dt <- data.table(
+      snpId    = sn,
+      sampleId = colnames(ref),
+      ref = r, alt = a, total = total,
+      refFrac = refFrac,
+      lo = pmax(0, refFrac - 1.96 * se),
+      hi = pmin(1, refFrac + 1.96 * se)
+    )
+    rows[[sn]] <- dt
+  }
+  tab <- data.table::rbindlist(rows)
+  tab <- merge(tab, annot, by = "sampleId", all.x = TRUE)
+  tab <- tab[!is.na(total) & total >= minReads]
+  tab
+}
+
+# ------------------------------------------------------------------------------
+# 1. Figure 4a — allelic-balance forest plot
+# ------------------------------------------------------------------------------
+#' Plot allele-specific chromatin balance across samples (Fig 4a style)
+#'
+#' For one or more heterozygous SNPs, plots the proportion of reads mapping to
+#' the reference allele in each sample, with binomial confidence intervals.
+#' Samples can be coloured by any annotation column (e.g. stimulus).
+#'
+#' @param dsObj      A \code{\linkS4class{DsASC}} object.
+#' @param snpIds     Character vector of snpIds (rownames of the count matrix).
+#' @param colorBy    Sample-annotation column to colour points by (default "stimulus").
+#' @param orderBy    Sample-annotation column to order the y axis by (default "cellType").
+#' @param minReads   Minimum reads to display a sample at a site (default 4).
+#' @param sigStats   Optional output of \code{calcASCStatistics}; significant
+#'                   (fdr < sigCut) sample-site points are drawn solid, others faded.
+#' @param sigCut     FDR threshold for "significant" shading (default 0.1).
+#' @return A ggplot object.
+#' @export
+plotASCBalance <- function(dsObj, snpIds, colorBy = "stimulus",
+                           orderBy = "cellType", minReads = 4,
+                           sigStats = NULL, sigCut = 0.1) {
+  tab <- .ascSiteTable(dsObj, snpIds, minReads = minReads)
+
+  # significance shading
+  tab$sig <- TRUE
+  if (!is.null(sigStats)) {
+    key <- paste(sigStats$snpId, sigStats$sampleId)
+    sigset <- key[sigStats$fdr < sigCut]
+    tab$sig <- paste(tab$snpId, tab$sampleId) %in% sigset
+  }
+
+  if (!is.null(orderBy) && orderBy %in% colnames(tab)) {
+    tab$sampleId <- factor(tab$sampleId,
+                           levels = unique(tab$sampleId[order(tab[[orderBy]])]))
+  }
+
+  aes_color <- if (!is.null(colorBy) && colorBy %in% colnames(tab)) colorBy else NULL
+
+  p <- ggplot(tab, aes(x = refFrac, y = sampleId)) +
+    geom_vline(xintercept = 0.5, linetype = "dashed", colour = "grey60") +
+    geom_errorbarh(aes(xmin = lo, xmax = hi, alpha = sig), height = 0) +
+    geom_point(aes_string(colour = aes_color, alpha = "sig"), size = 2) +
+    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.25), guide = "none") +
+    scale_x_continuous(limits = c(0, 1), breaks = c(0, 0.5, 1)) +
+    facet_wrap(~ snpId, nrow = 1) +
+    labs(x = "Proportion of reads mapping to reference allele",
+         y = NULL, colour = colorBy,
+         title = "Allele-specific chromatin accessibility") +
+    theme_bw(base_size = 10) +
+    theme(panel.grid.minor = element_blank(),
+          axis.text.y = element_text(size = 6))
+  p
+}
+
+# ------------------------------------------------------------------------------
+# 2. Per-sample ASC volcano
+# ------------------------------------------------------------------------------
+#' Volcano plot of ASC effect size vs significance
+#'
+#' @param dsObj      A \code{\linkS4class{DsASC}} object.
+#' @param stats      Optional output of \code{calcASCStatistics}. If NULL it is
+#'                   computed with the given minCoverage.
+#' @param sample     Optional single sampleId to restrict the plot to.
+#' @param minCoverage Passed to calcASCStatistics if stats is NULL (default 10).
+#' @param sigCut     FDR threshold for highlighting (default 0.1).
+#' @return A ggplot object.
+#' @export
+plotASCVolcano <- function(dsObj, stats = NULL, sample = NULL,
+                           minCoverage = 10, sigCut = 0.1) {
+  if (is.null(stats)) stats <- calcASCStatistics(dsObj, minCoverage = minCoverage)
+  if (is.null(stats)) stop("No statistics available to plot.")
+
+  dt <- data.table::as.data.table(stats)
+  if (!is.null(sample)) dt <- dt[sampleId == sample]
+  if (nrow(dt) == 0) stop("No rows to plot (check 'sample').")
+
+  dt[, negLogP := -log10(pmax(pVal, .Machine$double.xmin))]
+  dt[, sig := fdr < sigCut]
+
+  p <- ggplot(dt, aes(x = log2FC, y = negLogP, colour = sig)) +
+    geom_point(size = 1, alpha = 0.6) +
+    geom_vline(xintercept = 0, linetype = "dashed", colour = "grey60") +
+    scale_colour_manual(values = c("TRUE" = "#C0392B", "FALSE" = "grey70"),
+                        name = paste0("FDR < ", sigCut)) +
+    labs(x = expression(log[2]~"(alt / ref)"),
+         y = expression(-log[10]~"(p)"),
+         title = if (is.null(sample)) "ASC volcano (all samples)" else paste("ASC volcano:", sample)) +
+    theme_bw(base_size = 11) +
+    theme(panel.grid.minor = element_blank())
+  p
+}
+
+# ------------------------------------------------------------------------------
+# 3. Manhattan / genome-position view of ASC
+# ------------------------------------------------------------------------------
+#' Manhattan-style plot of ASC significance along the genome
+#'
+#' @param dsObj      A \code{\linkS4class{DsASC}} object (provides snp coordinates).
+#' @param stats      Optional output of \code{calcASCStatistics}. If NULL it is
+#'                   computed with the given minCoverage.
+#' @param sample     Optional single sampleId to restrict the plot to. If NULL,
+#'                   the most significant observation per SNP is shown.
+#' @param minCoverage Passed to calcASCStatistics if stats is NULL (default 10).
+#' @param sigCut     FDR threshold for the significance line (default 0.1).
+#' @return A ggplot object.
+#' @export
+plotASCManhattan <- function(dsObj, stats = NULL, sample = NULL,
+                             minCoverage = 10, sigCut = 0.1) {
+  if (is.null(stats)) stats <- calcASCStatistics(dsObj, minCoverage = minCoverage)
+  if (is.null(stats)) stop("No statistics available to plot.")
+
+  dt <- data.table::as.data.table(stats)
+  if (!is.null(sample)) dt <- dt[sampleId == sample]
+
+  # coordinates from the object
+  gr <- dsObj@coord$snps
+  coord <- data.table(
+    snpId = names(gr),
+    chrom = as.character(GenomicRanges::seqnames(gr)),
+    pos   = GenomicRanges::start(gr)
+  )
+  dt <- merge(dt, coord, by = "snpId")
+  if (nrow(dt) == 0) stop("No rows with coordinates to plot.")
+
+  # collapse to most significant per SNP if multiple samples
+  if (is.null(sample)) {
+    dt <- dt[dt[, .I[which.min(fdr)], by = snpId]$V1]
+  }
+
+  # order chromosomes naturally and build cumulative x position
+  chrom_order <- paste0("chr", c(1:22, "X", "Y"))
+  dt <- dt[chrom %in% chrom_order]
+  dt[, chrom := factor(chrom, levels = chrom_order)]
+  setkey(dt, chrom, pos)
+
+  chrom_len <- dt[, .(maxpos = max(pos)), by = chrom]
+  chrom_len[, offset := cumsum(as.numeric(maxpos)) - maxpos]
+  dt <- merge(dt, chrom_len[, .(chrom, offset)], by = "chrom")
+  dt[, xpos := pos + offset]
+  dt[, negLogFDR := -log10(pmax(fdr, .Machine$double.xmin))]
+
+  axis_df <- dt[, .(center = mean(range(xpos))), by = chrom]
+
+  p <- ggplot(dt, aes(x = xpos, y = negLogFDR, colour = chrom)) +
+    geom_point(size = 0.7, alpha = 0.7) +
+    geom_hline(yintercept = -log10(sigCut), linetype = "dashed", colour = "#C0392B") +
+    scale_colour_manual(values = rep(c("#34495E", "#95A5A6"),
+                                     length.out = nlevels(dt$chrom)), guide = "none") +
+    scale_x_continuous(breaks = axis_df$center, labels = sub("chr", "", axis_df$chrom)) +
+    labs(x = "Chromosome", y = expression(-log[10]~"(FDR)"),
+         title = if (is.null(sample)) "ASC across the genome (best per SNP)" else paste("ASC:", sample)) +
+    theme_bw(base_size = 11) +
+    theme(panel.grid.minor = element_blank(),
+          panel.grid.major.x = element_blank())
+  p
 }
