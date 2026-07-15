@@ -502,10 +502,17 @@ filterASCByPeaks <- function(dsObj) {
 #' @param dsObj A DsASC object (WASP-filtered, peak-annotated).
 #' @param minCoverage Minimum total coverage (ref+alt) required to test a site
 #'                    in a sample (default 10).
+#' @param minAllele Minimum reads required on EACH allele (min(ref, alt)) for a
+#'                    site-sample to be tested (default 2). At low coverage the
+#'                    only calls that reach significance against 0.5 are the most
+#'                    extreme imbalances, with minor allele = 0; those are
+#'                    low-confidence "pseudo-ASC" that inflate the ref skew and
+#'                    the significant count. Requiring >= 2 reads on both alleles
+#'                    is the standard ASE/ASC guard and keeps calls two-sided.
 #' @return A data.table with one row per tested (snp x sample): ref, alt, total,
 #'         log2FC (alt vs ref effect size), pVal, fdr (per-sample BH), and peakId.
 #' @export
-calcASCStatistics <- function(dsObj, minCoverage = 10) {
+calcASCStatistics <- function(dsObj, minCoverage = 10, minAllele = 2) {
 
   logger.start("Calculating ASC Statistics (binomial test vs p = 0.5)")
 
@@ -518,11 +525,12 @@ calcASCStatistics <- function(dsObj, minCoverage = 10) {
   dt$ref <- as.vector(refMat)
   dt$alt <- as.vector(altMat)
 
-  # Only test sites with sufficient coverage IN THAT SAMPLE
-  dt <- dt[dt$total >= minCoverage]
+  # Only test sites with sufficient coverage AND >= minAllele reads on BOTH
+  # alleles in that sample (drops minor-allele = 0 low-confidence pseudo-ASC).
+  dt <- dt[dt$total >= minCoverage & pmin(dt$ref, dt$alt) >= minAllele]
 
   if (nrow(dt) == 0) {
-    logger.warning("No sites passed coverage threshold.")
+    logger.warning("No sites passed coverage / min-allele threshold.")
     return(NULL)
   }
 
@@ -803,47 +811,57 @@ ascSharing <- function(refA, altA, refB, altB, fdrA = 0.01, minReadsB = 4) {
 
 #' Drop homozygous / mis-genotyped sites using donor-pooled evidence
 #'
-#' A genuinely heterozygous site must show BOTH alleles once reads are pooled
-#' across all of a donor's samples. Sites where a donor's pooled minor-allele
-#' count is ~0 at adequate coverage are almost certainly genotyping errors
-#' (actually homozygous) and generate false allele-specific-chromatin calls
-#' (the homozygous "leak" the benchmark in 04_asc_benchmarking.R quantifies).
-#' For each donor, such sites have their counts ZEROED in that donor's sample
+#' A genuinely heterozygous site must show BOTH alleles in a BALANCED way once
+#' reads are pooled across all of a donor's samples. Two kinds of genotyping
+#' error are removed (they generate the homozygous "leak" that
+#' 04_asc_benchmarking.R quantifies):
+#' \enumerate{
+#'   \item pooled minor-allele count below \code{minMinor} (strictly monoallelic);
+#'   \item pooled minor-allele FRACTION below \code{minMinorFrac} -- a hom-ref (or
+#'         hom-alt) site whose few minor reads are just sequencing error scattered
+#'         across many samples. An absolute count alone misses these, because
+#'         ~0.3\% error across ~50 deep samples can sum to >=2 minor reads while
+#'         the pooled fraction stays near zero; the fraction test catches them.
+#' }
+#' For each donor, offending sites have their counts ZEROED in that donor's sample
 #' columns (ref = alt = 0), giving total coverage 0 so they are dropped by the
 #' downstream coverage filters and never tested. Zeroing (rather than NA) keeps
-#' plain \code{sum()} / \code{rowSums()} calls valid, matching the codebase's
-#' 0-filled count convention. Genuine strong ASC survives, because the donor
-#' still pools to >= \code{minMinor} minor-allele reads.
+#' plain \code{sum()} / \code{rowSums()} calls valid. Genuine ASC survives: even
+#' strong allele-specific sites pool to a minor fraction well above
+#' \code{minMinorFrac} across a donor's many samples.
 #'
 #' @param refMat,altMat count matrices [snp x sample].
 #' @param annot         sample annotation with \code{sampleId}, \code{donor}.
-#' @param minMinor      minimum donor-pooled minor-allele reads to keep a site
-#'                      for that donor (default 2).
-#' @param minTotal      donor-pooled coverage above which a ~monoallelic site is
-#'                      judged homozygous rather than merely low-coverage
-#'                      (default 10).
+#' @param minMinor      minimum donor-pooled minor-allele reads (default 2).
+#' @param minMinorFrac  minimum donor-pooled minor-allele fraction (default 0.05);
+#'                      below this a covered site is treated as homozygous+error.
+#' @param minTotal      donor-pooled coverage above which the tests apply rather
+#'                      than treating the site as merely low-coverage (default 10).
 #' @param verbose       log how many donor x site cells were masked (default TRUE).
 #' @return list(ref, alt) with donor-specific zeroing applied.
 #' @author Irem B. GUNDUZ
 #' @export
 ascDropHomozygous <- function(refMat, altMat, annot,
-                              minMinor = 2L, minTotal = 10L, verbose = TRUE) {
+                              minMinor = 2L, minMinorFrac = 0.05,
+                              minTotal = 10L, verbose = TRUE) {
   annot <- data.table::as.data.table(annot)
-  masked <- 0L
+  masked <- 0L; badSites <- 0L
   for (d in unique(annot$donor)) {
     s <- intersect(annot[donor == d, sampleId], colnames(refMat))
     if (length(s) == 0) next
     pr    <- rowSums(refMat[, s, drop = FALSE], na.rm = TRUE)
     pa    <- rowSums(altMat[, s, drop = FALSE], na.rm = TRUE)
     minor <- pmin(pr, pa); tot <- pr + pa
-    bad   <- which(tot >= minTotal & minor < minMinor)   # covered but ~monoallelic
+    frac  <- ifelse(tot > 0, minor / tot, 0)
+    # covered, but monoallelic by count OR by fraction (error-only minor allele)
+    bad   <- which(tot >= minTotal & (minor < minMinor | frac < minMinorFrac))
     if (length(bad) > 0) {
       refMat[bad, s] <- 0L; altMat[bad, s] <- 0L         # zero -> total 0 -> not tested
-      masked <- masked + length(bad) * length(s)
+      masked <- masked + length(bad) * length(s); badSites <- badSites + length(bad)
     }
   }
-  if (verbose) logger.info(paste("ascDropHomozygous: masked", masked,
-                                 "donor x site cells as homozygous/mis-genotyped."))
+  if (verbose) logger.info(paste0("ascDropHomozygous: masked ", badSites,
+                 " donor x site loci (", masked, " cells) as homozygous/mis-genotyped."))
   list(ref = refMat, alt = altMat)
 }
 

@@ -4,13 +4,21 @@
 \alias{calcASCStatistics}
 \title{Calculate ASC Statistics (Calderon et al. 2019)}
 \usage{
-calcASCStatistics(dsObj, minCoverage = 10)
+calcASCStatistics(dsObj, minCoverage = 10, minAllele = 2)
 }
 \arguments{
 \item{dsObj}{A DsASC object (WASP-filtered, peak-annotated).}
 
 \item{minCoverage}{Minimum total coverage (ref+alt) required to test a site
 in a sample (default 10).}
+
+\item{minAllele}{Minimum reads required on EACH allele (min(ref, alt)) for a
+site-sample to be tested (default 2). At low coverage the
+only calls that reach significance against 0.5 are the most
+extreme imbalances, with minor allele = 0; those are
+low-confidence "pseudo-ASC" that inflate the ref skew and
+the significant count. Requiring >= 2 reads on both alleles
+is the standard ASE/ASC guard and keeps calls two-sided.}
 }
 \value{
 A data.table with one row per tested (snp x sample): ref, alt, total,

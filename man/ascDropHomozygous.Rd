@@ -9,6 +9,7 @@ ascDropHomozygous(
   altMat,
   annot,
   minMinor = 2L,
+  minMinorFrac = 0.05,
   minTotal = 10L,
   verbose = TRUE
 )
@@ -18,12 +19,13 @@ ascDropHomozygous(
 
 \item{annot}{sample annotation with \code{sampleId}, \code{donor}.}
 
-\item{minMinor}{minimum donor-pooled minor-allele reads to keep a site
-for that donor (default 2).}
+\item{minMinor}{minimum donor-pooled minor-allele reads (default 2).}
 
-\item{minTotal}{donor-pooled coverage above which a ~monoallelic site is
-judged homozygous rather than merely low-coverage
-(default 10).}
+\item{minMinorFrac}{minimum donor-pooled minor-allele fraction (default 0.05);
+below this a covered site is treated as homozygous+error.}
+
+\item{minTotal}{donor-pooled coverage above which the tests apply rather
+than treating the site as merely low-coverage (default 10).}
 
 \item{verbose}{log how many donor x site cells were masked (default TRUE).}
 }
@@ -31,17 +33,24 @@ judged homozygous rather than merely low-coverage
 list(ref, alt) with donor-specific zeroing applied.
 }
 \description{
-A genuinely heterozygous site must show BOTH alleles once reads are pooled
-across all of a donor's samples. Sites where a donor's pooled minor-allele
-count is ~0 at adequate coverage are almost certainly genotyping errors
-(actually homozygous) and generate false allele-specific-chromatin calls
-(the homozygous "leak" the benchmark in 04_asc_benchmarking.R quantifies).
-For each donor, such sites have their counts ZEROED in that donor's sample
+A genuinely heterozygous site must show BOTH alleles in a BALANCED way once
+reads are pooled across all of a donor's samples. Two kinds of genotyping
+error are removed (they generate the homozygous "leak" that
+04_asc_benchmarking.R quantifies):
+\enumerate{
+  \item pooled minor-allele count below \code{minMinor} (strictly monoallelic);
+  \item pooled minor-allele FRACTION below \code{minMinorFrac} -- a hom-ref (or
+        hom-alt) site whose few minor reads are just sequencing error scattered
+        across many samples. An absolute count alone misses these, because
+        ~0.3\% error across ~50 deep samples can sum to >=2 minor reads while
+        the pooled fraction stays near zero; the fraction test catches them.
+}
+For each donor, offending sites have their counts ZEROED in that donor's sample
 columns (ref = alt = 0), giving total coverage 0 so they are dropped by the
 downstream coverage filters and never tested. Zeroing (rather than NA) keeps
-plain \code{sum()} / \code{rowSums()} calls valid, matching the codebase's
-0-filled count convention. Genuine strong ASC survives, because the donor
-still pools to >= \code{minMinor} minor-allele reads.
+plain \code{sum()} / \code{rowSums()} calls valid. Genuine ASC survives: even
+strong allele-specific sites pool to a minor fraction well above
+\code{minMinorFrac} across a donor's many samples.
 }
 \author{
 Irem B. GUNDUZ
