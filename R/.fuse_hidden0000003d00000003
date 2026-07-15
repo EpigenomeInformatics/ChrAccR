@@ -402,7 +402,7 @@ plotASCTFDonorDelta <- function(donorDeltaDt, topN = 20L) {
     ggplot2::geom_point(size = 0.9, alpha = 0.6,
                         position = ggplot2::position_jitter(height = 0.12, width = 0)) +
     ggplot2::scale_colour_manual(values = fam_cols, name = "TF family") +
-    ggplot2::labs(x = "Per-donor change in activity (stimulated minus resting)", y = NULL,
+    ggplot2::labs(x = "Per-donor Δ activity (stimulated − resting)", y = NULL,
                   title = "Per-donor robustness of stimulation amplification",
                   subtitle = "Each point = one donor; box = across-donor distribution") +
     ggplot2::theme_bw(base_size = 10) +

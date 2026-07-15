@@ -798,53 +798,6 @@ ascSharing <- function(refA, altA, refB, altB, fdrA = 0.01, minReadsB = 4) {
 }
 
 # ------------------------------------------------------------------------------
-# Genotype-quality cleanup
-# ------------------------------------------------------------------------------
-
-#' Drop homozygous / mis-genotyped sites using donor-pooled evidence
-#'
-#' A genuinely heterozygous site must show BOTH alleles once reads are pooled
-#' across all of a donor's samples. Sites where a donor's pooled minor-allele
-#' count is ~0 at adequate coverage are almost certainly genotyping errors
-#' (actually homozygous) and generate false allele-specific-chromatin calls
-#' (the homozygous "leak" the benchmark in 04_asc_benchmarking.R quantifies).
-#' For each donor, such sites are set to NA in that donor's sample columns so
-#' they are never tested. Genuine strong ASC survives, because the donor still
-#' pools to >= \code{minMinor} minor-allele reads.
-#'
-#' @param refMat,altMat count matrices [snp x sample] (NA = not tested).
-#' @param annot         sample annotation with \code{sampleId}, \code{donor}.
-#' @param minMinor      minimum donor-pooled minor-allele reads to keep a site
-#'                      for that donor (default 2).
-#' @param minTotal      donor-pooled coverage above which a ~monoallelic site is
-#'                      judged homozygous rather than merely low-coverage
-#'                      (default 10).
-#' @param verbose       log how many donor x site cells were masked (default TRUE).
-#' @return list(ref, alt) with donor-specific NA masking applied.
-#' @author Irem B. GUNDUZ
-#' @export
-ascDropHomozygous <- function(refMat, altMat, annot,
-                              minMinor = 2L, minTotal = 10L, verbose = TRUE) {
-  annot <- data.table::as.data.table(annot)
-  masked <- 0L
-  for (d in unique(annot$donor)) {
-    s <- intersect(annot[donor == d, sampleId], colnames(refMat))
-    if (length(s) == 0) next
-    pr    <- rowSums(refMat[, s, drop = FALSE], na.rm = TRUE)
-    pa    <- rowSums(altMat[, s, drop = FALSE], na.rm = TRUE)
-    minor <- pmin(pr, pa); tot <- pr + pa
-    bad   <- which(tot >= minTotal & minor < minMinor)   # covered but ~monoallelic
-    if (length(bad) > 0) {
-      refMat[bad, s] <- NA; altMat[bad, s] <- NA
-      masked <- masked + length(bad) * length(s)
-    }
-  }
-  if (verbose) logger.info(paste("ascDropHomozygous: masked", masked,
-                                 "donor x site cells as homozygous/mis-genotyped."))
-  list(ref = refMat, alt = altMat)
-}
-
-# ------------------------------------------------------------------------------
 # Donor utilities
 # ------------------------------------------------------------------------------
 
