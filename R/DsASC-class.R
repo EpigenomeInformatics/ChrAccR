@@ -808,11 +808,14 @@ ascSharing <- function(refA, altA, refB, altB, fdrA = 0.01, minReadsB = 4) {
 #' count is ~0 at adequate coverage are almost certainly genotyping errors
 #' (actually homozygous) and generate false allele-specific-chromatin calls
 #' (the homozygous "leak" the benchmark in 04_asc_benchmarking.R quantifies).
-#' For each donor, such sites are set to NA in that donor's sample columns so
-#' they are never tested. Genuine strong ASC survives, because the donor still
-#' pools to >= \code{minMinor} minor-allele reads.
+#' For each donor, such sites have their counts ZEROED in that donor's sample
+#' columns (ref = alt = 0), giving total coverage 0 so they are dropped by the
+#' downstream coverage filters and never tested. Zeroing (rather than NA) keeps
+#' plain \code{sum()} / \code{rowSums()} calls valid, matching the codebase's
+#' 0-filled count convention. Genuine strong ASC survives, because the donor
+#' still pools to >= \code{minMinor} minor-allele reads.
 #'
-#' @param refMat,altMat count matrices [snp x sample] (NA = not tested).
+#' @param refMat,altMat count matrices [snp x sample].
 #' @param annot         sample annotation with \code{sampleId}, \code{donor}.
 #' @param minMinor      minimum donor-pooled minor-allele reads to keep a site
 #'                      for that donor (default 2).
@@ -820,7 +823,7 @@ ascSharing <- function(refA, altA, refB, altB, fdrA = 0.01, minReadsB = 4) {
 #'                      judged homozygous rather than merely low-coverage
 #'                      (default 10).
 #' @param verbose       log how many donor x site cells were masked (default TRUE).
-#' @return list(ref, alt) with donor-specific NA masking applied.
+#' @return list(ref, alt) with donor-specific zeroing applied.
 #' @author Irem B. GUNDUZ
 #' @export
 ascDropHomozygous <- function(refMat, altMat, annot,
@@ -835,7 +838,7 @@ ascDropHomozygous <- function(refMat, altMat, annot,
     minor <- pmin(pr, pa); tot <- pr + pa
     bad   <- which(tot >= minTotal & minor < minMinor)   # covered but ~monoallelic
     if (length(bad) > 0) {
-      refMat[bad, s] <- NA; altMat[bad, s] <- NA
+      refMat[bad, s] <- 0L; altMat[bad, s] <- 0L         # zero -> total 0 -> not tested
       masked <- masked + length(bad) * length(s)
     }
   }

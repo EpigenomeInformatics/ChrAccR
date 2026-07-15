@@ -14,7 +14,7 @@ ascDropHomozygous(
 )
 }
 \arguments{
-\item{refMat, altMat}{count matrices [snp x sample] (NA = not tested).}
+\item{refMat, altMat}{count matrices [snp x sample].}
 
 \item{annot}{sample annotation with \code{sampleId}, \code{donor}.}
 
@@ -28,7 +28,7 @@ judged homozygous rather than merely low-coverage
 \item{verbose}{log how many donor x site cells were masked (default TRUE).}
 }
 \value{
-list(ref, alt) with donor-specific NA masking applied.
+list(ref, alt) with donor-specific zeroing applied.
 }
 \description{
 A genuinely heterozygous site must show BOTH alleles once reads are pooled
@@ -36,9 +36,12 @@ across all of a donor's samples. Sites where a donor's pooled minor-allele
 count is ~0 at adequate coverage are almost certainly genotyping errors
 (actually homozygous) and generate false allele-specific-chromatin calls
 (the homozygous "leak" the benchmark in 04_asc_benchmarking.R quantifies).
-For each donor, such sites are set to NA in that donor's sample columns so
-they are never tested. Genuine strong ASC survives, because the donor still
-pools to >= \code{minMinor} minor-allele reads.
+For each donor, such sites have their counts ZEROED in that donor's sample
+columns (ref = alt = 0), giving total coverage 0 so they are dropped by the
+downstream coverage filters and never tested. Zeroing (rather than NA) keeps
+plain \code{sum()} / \code{rowSums()} calls valid, matching the codebase's
+0-filled count convention. Genuine strong ASC survives, because the donor
+still pools to >= \code{minMinor} minor-allele reads.
 }
 \author{
 Irem B. GUNDUZ
