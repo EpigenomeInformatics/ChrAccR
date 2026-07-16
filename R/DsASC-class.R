@@ -865,6 +865,86 @@ ascDropHomozygous <- function(refMat, altMat, annot,
   list(ref = refMat, alt = altMat)
 }
 
+#' Drop ASC sites in blacklist / low-mappability regions
+#'
+#' Repetitive and low-mappability regions are where WASP fails to remove reference
+#' mapping bias AND where GATK makes false-heterozygous genotype calls (reads from
+#' a paralog map in). Both push significant ASC toward the reference allele. Since
+#' we lack the paper's imputed-genotype QC, removing these regions is the standard,
+#' faithful mitigation (Calderon et al. also excluded blacklist regions in QC).
+#'
+#' @param snpIds   character vector of "chr:pos_REF_ALT" ids (rownames of the
+#'                 count matrices).
+#' @param regionsGr GRanges of regions to remove (ENCODE blacklist and/or
+#'                 low-mappability). Seqnames must be UCSC-style ("chr1", ...).
+#' @param verbose  log how many sites were removed (default TRUE).
+#' @return the subset of \code{snpIds} NOT overlapping \code{regionsGr}.
+#' @author Irem B. GUNDUZ
+#' @export
+ascFilterRegions <- function(snpIds, regionsGr, verbose = TRUE) {
+  chrpos <- sub("_.*$", "", snpIds)                 # "chr:pos"
+  chrom  <- sub(":.*$", "", chrpos)
+  pos    <- suppressWarnings(as.integer(sub("^.*:", "", chrpos)))
+  ok     <- !is.na(pos)
+  gr     <- GenomicRanges::GRanges(chrom[ok], IRanges::IRanges(pos[ok], pos[ok]))
+  ov     <- GenomicRanges::findOverlaps(gr, regionsGr)
+  badLocal <- unique(S4Vectors::queryHits(ov))
+  bad    <- which(ok)[badLocal]
+  keep   <- setdiff(seq_along(snpIds), bad)
+  if (verbose) logger.info(paste0("ascFilterRegions: removed ", length(bad), " / ",
+                 length(snpIds), " sites in blacklist/low-mappability regions."))
+  snpIds[keep]
+}
+
+#' Pool technical-replicate libraries into biological samples
+#'
+#' Calderon et al. count and test allele-specific chromatin at the level of a
+#' biological sample (a donor x cell-type x condition), merging technical
+#' replicate libraries. Our per-library ATAC objects instead carry each replicate
+#' as its own column, which halves the reads per binomial test and sharply
+#' reduces power (median per-test coverage ~17 vs a paper-comparable ~34). This
+#' function sums ref/alt counts across libraries that share the same
+#' \code{groupCols}, reproducing the paper's per-sample unit before testing.
+#'
+#' @param refMat,altMat count matrices [snp x library].
+#' @param annot         sample annotation with \code{sampleId} plus \code{groupCols}.
+#' @param groupCols     columns defining a biological sample
+#'                      (default c("cellType","stimulus","donor")).
+#' @param verbose       log the collapse (default TRUE).
+#' @return list(ref, alt, annot): pooled matrices [snp x biological-sample] and a
+#'         one-row-per-sample annotation whose \code{sampleId} is the group key.
+#' @author Irem B. GUNDUZ
+#' @export
+ascPoolReplicates <- function(refMat, altMat, annot,
+                              groupCols = c("cellType", "stimulus", "donor"),
+                              verbose = TRUE) {
+  annot <- data.table::as.data.table(annot)
+  if (!all(groupCols %in% names(annot)))
+    stop(paste("annot lacks grouping columns:",
+               paste(setdiff(groupCols, names(annot)), collapse = ", ")))
+
+  a   <- annot[match(colnames(refMat), sampleId)]
+  grp <- do.call(paste, c(a[, ..groupCols], sep = "_"))
+  idxByGroup <- split(seq_along(grp), grp)
+  ug  <- names(idxByGroup)
+
+  poolRef <- vapply(ug, function(g)
+    rowSums(refMat[, idxByGroup[[g]], drop = FALSE], na.rm = TRUE), numeric(nrow(refMat)))
+  poolAlt <- vapply(ug, function(g)
+    rowSums(altMat[, idxByGroup[[g]], drop = FALSE], na.rm = TRUE), numeric(nrow(altMat)))
+  rownames(poolRef) <- rownames(refMat); rownames(poolAlt) <- rownames(altMat)
+
+  poolAnnot <- unique(a[, ..groupCols])
+  poolAnnot[, sampleId := do.call(paste, c(.SD, sep = "_")), .SDcols = groupCols]
+  poolAnnot <- poolAnnot[match(ug, sampleId)]              # align annot to matrix cols
+  data.table::setcolorder(poolAnnot, c("sampleId", groupCols))
+
+  if (verbose) logger.info(paste0("ascPoolReplicates: pooled ", ncol(refMat),
+                 " libraries into ", length(ug), " biological samples (",
+                 paste(groupCols, collapse = " x "), ")."))
+  list(ref = poolRef, alt = poolAlt, annot = poolAnnot)
+}
+
 # ------------------------------------------------------------------------------
 # Donor utilities
 # ------------------------------------------------------------------------------
