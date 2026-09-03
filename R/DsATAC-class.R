@@ -89,7 +89,7 @@ DsATAC <- function(sampleAnnot, genome, diskDump = FALSE, diskDump.fragments = T
 ################################################################################
 # Getters
 ################################################################################
-if (!isGeneric("getCounts")) {
+if (!exists("getCounts", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getCounts",
     function(.object, ...) standardGeneric("getCounts"),
@@ -176,7 +176,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("getCountsSE")) {
+if (!exists("getCountsSE", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getCountsSE",
     function(.object, ...) standardGeneric("getCountsSE"),
@@ -222,7 +222,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getFragmentGr")) {
+if (!exists("getFragmentGr", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getFragmentGr",
     function(.object, ...) standardGeneric("getFragmentGr"),
@@ -267,7 +267,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getFragmentGrl")) {
+if (!exists("getFragmentGrl", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getFragmentGrl",
     function(.object, ...) standardGeneric("getFragmentGrl"),
@@ -335,7 +335,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("getFragmentNum")) {
+if (!exists("getFragmentNum", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getFragmentNum",
     function(.object, ...) standardGeneric("getFragmentNum"),
@@ -370,7 +370,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getInsertionSites")) {
+if (!exists("getInsertionSites", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getInsertionSites",
     function(.object, ...) standardGeneric("getInsertionSites"),
@@ -412,7 +412,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getCoverage")) {
+if (!exists("getCoverage", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getCoverage",
     function(.object, ...) standardGeneric("getCoverage"),
@@ -491,7 +491,7 @@ setMethod(
 ################################################################################
 
 # #-------------------------------------------------------------------------------
-# if (!isGeneric("getRegionMapping")) {
+# if (!exists("getRegionMapping", envir = topenv(environment()), inherits = FALSE)) {
 # 	setGeneric(
 # 		"getRegionMapping",
 # 		function(.object, ...) standardGeneric("getRegionMapping"),
@@ -532,7 +532,7 @@ setMethod(
 # 	}
 # )
 #-------------------------------------------------------------------------------
-if (!isGeneric("regionAggregation")) {
+if (!exists("regionAggregation", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "regionAggregation",
     function(.object, ...) standardGeneric("regionAggregation"),
@@ -745,7 +745,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("mergeSamples")) {
+if (!exists("mergeSamples", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "mergeSamples",
     function(.object, ...) standardGeneric("mergeSamples"),
@@ -909,7 +909,7 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 # IN DEVELOPMENT
-if (!isGeneric("join")) {
+if (!exists("join", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "join",
     function(.object, ...) standardGeneric("join"),
@@ -1088,7 +1088,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("removeFragmentData")) {
+if (!exists("removeFragmentData", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "removeFragmentData",
     function(object) standardGeneric("removeFragmentData"),
@@ -1120,7 +1120,7 @@ setMethod(
 )
 #-------------------------------------------------------------------------------
 # EXPERIMENTAL
-if (!isGeneric("undiskFragmentData")) {
+if (!exists("undiskFragmentData", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "undiskFragmentData",
     function(object) standardGeneric("undiskFragmentData"),
@@ -1153,7 +1153,7 @@ setMethod(
 )
 #-------------------------------------------------------------------------------
 # EXPERIMENTAL
-if (!isGeneric("subsampleFragmentData")) {
+if (!exists("subsampleFragmentData", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "subsampleFragmentData",
     function(object, ...) standardGeneric("subsampleFragmentData"),
@@ -1196,7 +1196,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("addCountDataFromBam")) {
+if (!exists("addCountDataFromBam", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "addCountDataFromBam",
     function(.object, ...) standardGeneric("addCountDataFromBam"),
@@ -1256,7 +1256,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("addCountDataFromGRL")) {
+if (!exists("addCountDataFromGRL", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "addCountDataFromGRL",
     function(.object, ...) standardGeneric("addCountDataFromGRL"),
@@ -1369,7 +1369,7 @@ setMethod(
 # 	}
 # )
 #-------------------------------------------------------------------------------
-if (!isGeneric("addSignalDataFromGRL")) {
+if (!exists("addSignalDataFromGRL", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "addSignalDataFromGRL",
     function(.object, ...) standardGeneric("addSignalDataFromGRL"),
@@ -1429,7 +1429,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("addInsertionDataFromBam")) {
+if (!exists("addInsertionDataFromBam", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "addInsertionDataFromBam",
     function(.object, ...) standardGeneric("addInsertionDataFromBam"),
@@ -1536,7 +1536,7 @@ setMethod(
 ################################################################################
 # Manipulating DsATAC objects
 ################################################################################
-if (!isGeneric("removeRegions")) {
+if (!exists("removeRegions", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "removeRegions",
     function(.object, ...) standardGeneric("removeRegions"),
@@ -1597,7 +1597,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("removeRegionType")) {
+if (!exists("removeRegionType", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "removeRegionType",
     function(.object, ...) standardGeneric("removeRegionType"),
@@ -1638,7 +1638,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("removeRegionData")) {
+if (!exists("removeRegionData", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "removeRegionData",
     function(.object) standardGeneric("removeRegionData"),
@@ -1671,7 +1671,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("removeSamples")) {
+if (!exists("removeSamples", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "removeSamples",
     function(.object, ...) standardGeneric("removeSamples"),
@@ -1781,7 +1781,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("transformCounts")) {
+if (!exists("transformCounts", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "transformCounts",
     function(.object, ...) standardGeneric("transformCounts"),
@@ -1992,7 +1992,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("filterLowCovg")) {
+if (!exists("filterLowCovg", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "filterLowCovg",
     function(.object, ...) standardGeneric("filterLowCovg"),
@@ -2054,7 +2054,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("filterChroms")) {
+if (!exists("filterChroms", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "filterChroms",
     function(.object, ...) standardGeneric("filterChroms"),
@@ -2128,7 +2128,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("filterByGRanges")) {
+if (!exists("filterByGRanges", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "filterByGRanges",
     function(.object, ...) standardGeneric("filterByGRanges"),
@@ -2213,7 +2213,7 @@ setMethod(
 ################################################################################
 # Analysis Utils
 ################################################################################
-if (!isGeneric("regionSetCounts")) {
+if (!exists("regionSetCounts", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "regionSetCounts",
     function(.object, ...) standardGeneric("regionSetCounts"),
@@ -2274,7 +2274,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getInsertionKmerFreq")) {
+if (!exists("getInsertionKmerFreq", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getInsertionKmerFreq",
     function(.object, ...) standardGeneric("getInsertionKmerFreq"),
@@ -2325,7 +2325,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("aggregateRegionCounts")) {
+if (!exists("aggregateRegionCounts", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "aggregateRegionCounts",
     function(.object, ...) standardGeneric("aggregateRegionCounts"),
@@ -2511,7 +2511,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getMotifEnrichment")) {
+if (!exists("getMotifEnrichment", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getMotifEnrichment",
     function(.object, ...) standardGeneric("getMotifEnrichment"),
@@ -2621,7 +2621,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getChromVarDev")) {
+if (!exists("getChromVarDev", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getChromVarDev",
     function(.object, ...) standardGeneric("getChromVarDev"),
@@ -2634,7 +2634,7 @@ if (!isGeneric("getChromVarDev")) {
 #'
 #' @param .object    \code{\linkS4class{DsATAC}} object
 #' @param type       character string specifying the region type
-#' @param motifs     either a character string (currently only "jaspar" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported) or an object containing PWMs
+#' @param motifs     either a character string (currently only "jaspar2018" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported) or an object containing PWMs
 #'                   that can be used by \code{motifmatchr::matchMotifs} (such as an \code{PFMatrixList} or \code{PWMatrixList} object)
 #' @return Deviations object as returned by \code{chromVAR::computeDeviations}
 #'
@@ -2651,7 +2651,7 @@ setMethod(
   ),
   function(.object,
            type,
-           motifs = "jaspar") {
+           motifs = "jaspar2018") {
     res <- NULL
 
     countSe <- getCountsSE(.object, type, naIsZero = TRUE)
@@ -2675,7 +2675,7 @@ setMethod(
 ################################################################################
 # Footprinting
 ################################################################################
-if (!isGeneric("getMotifFootprints")) {
+if (!exists("getMotifFootprints", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getMotifFootprints",
     function(.object, ...) standardGeneric("getMotifFootprints"),
@@ -2939,7 +2939,7 @@ setMethod(
   }
 )
 
-if (!isGeneric("getDiffAcc")) {
+if (!exists("getDiffAcc", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getDiffAcc",
     function(.object, ...) standardGeneric("getDiffAcc"),
@@ -3068,7 +3068,7 @@ setMethod(
 ################################################################################
 # Export
 ################################################################################
-if (!isGeneric("exportCountTracks")) {
+if (!exists("exportCountTracks", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "exportCountTracks",
     function(.object, ...) standardGeneric("exportCountTracks"),
@@ -3138,7 +3138,7 @@ setMethod(
 ################################################################################
 # Data processing / inference
 ################################################################################
-if (!isGeneric("callPeaks")) {
+if (!exists("callPeaks", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "callPeaks",
     function(.object, ...) standardGeneric("callPeaks"),
@@ -3358,7 +3358,7 @@ setMethod(
 ################################################################################
 # Plotting
 ################################################################################
-if (!isGeneric("plotInsertSizeDistribution")) {
+if (!exists("plotInsertSizeDistribution", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "plotInsertSizeDistribution",
     function(.object, ...) standardGeneric("plotInsertSizeDistribution"),
@@ -3399,7 +3399,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getTssEnrichment")) {
+if (!exists("getTssEnrichment", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getTssEnrichment",
     function(.object, ...) standardGeneric("getTssEnrichment"),
@@ -3486,7 +3486,7 @@ setMethod(
 ################################################################################
 # Single-cell/ high-sample number analyses
 ################################################################################
-if (!isGeneric("getTssEnrichmentBatch")) {
+if (!exists("getTssEnrichmentBatch", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getTssEnrichmentBatch",
     function(.object, ...) standardGeneric("getTssEnrichmentBatch"),
@@ -3637,7 +3637,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("getQuickTssEnrichment")) {
+if (!exists("getQuickTssEnrichment", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getQuickTssEnrichment",
     function(.object, ...) standardGeneric("getQuickTssEnrichment"),
@@ -3737,7 +3737,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("getMonocleCellDataSet")) {
+if (!exists("getMonocleCellDataSet", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getMonocleCellDataSet",
     function(.object, ...) standardGeneric("getMonocleCellDataSet"),
@@ -3806,7 +3806,7 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 
-if (!isGeneric("getCiceroGeneActivities")) {
+if (!exists("getCiceroGeneActivities", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getCiceroGeneActivities",
     function(.object, ...) standardGeneric("getCiceroGeneActivities"),
@@ -3941,7 +3941,7 @@ setMethod(
 )
 
 
-if (!isGeneric("getRBFGeneActivities")) {
+if (!exists("getRBFGeneActivities", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getRBFGeneActivities",
     function(.object, ...) standardGeneric("getRBFGeneActivities"),

@@ -6,14 +6,14 @@
 \alias{getChromVarDev}
 \title{getChromVarDev-methods}
 \usage{
-\S4method{getChromVarDev}{DsATAC}(.object, type, motifs = "jaspar")
+\S4method{getChromVarDev}{DsATAC}(.object, type, motifs = "jaspar2018")
 }
 \arguments{
 \item{.object}{\code{\linkS4class{DsATAC}} object}
 
 \item{type}{character string specifying the region type}
 
-\item{motifs}{either a character string (currently only "jaspar" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported) or an object containing PWMs
+\item{motifs}{either a character string (currently only "jaspar2018" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported) or an object containing PWMs
 that can be used by \code{motifmatchr::matchMotifs} (such as an \code{PFMatrixList} or \code{PWMatrixList} object)}
 }
 \value{

@@ -58,7 +58,7 @@ DsATACsc <- function(sampleAnnot, genome, diskDump = FALSE, diskDump.fragments =
 ################################################################################
 # Single-cell methods
 ################################################################################
-if (!isGeneric("simulateDoublets")) {
+if (!exists("simulateDoublets", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "simulateDoublets",
     function(.object, ...) standardGeneric("simulateDoublets"),
@@ -168,7 +168,7 @@ setMethod(
 )
 #-------------------------------------------------------------------------------
 
-if (!isGeneric("getScQcStatsTab")) {
+if (!exists("getScQcStatsTab", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getScQcStatsTab",
     function(.object, ...) standardGeneric("getScQcStatsTab"),
@@ -235,7 +235,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("filterCellsTssEnrichment")) {
+if (!exists("filterCellsTssEnrichment", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "filterCellsTssEnrichment",
     function(.object, ...) standardGeneric("filterCellsTssEnrichment"),
@@ -291,7 +291,7 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 
-if (!isGeneric("unsupervisedAnalysisSc")) {
+if (!exists("unsupervisedAnalysisSc", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "unsupervisedAnalysisSc",
     function(.object, ...) standardGeneric("unsupervisedAnalysisSc"),
@@ -392,7 +392,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("dimRed_UMAP")) {
+if (!exists("dimRed_UMAP", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "dimRed_UMAP",
     function(.object, ...) standardGeneric("dimRed_UMAP"),
@@ -524,7 +524,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("iterativeLSI")) {
+if (!exists("iterativeLSI", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "iterativeLSI",
     function(.object, ...) standardGeneric("iterativeLSI"),
@@ -800,7 +800,7 @@ setMethod(
 
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("mergePseudoBulk")) {
+if (!exists("mergePseudoBulk", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "mergePseudoBulk",
     function(.object, ...) standardGeneric("mergePseudoBulk"),
@@ -853,7 +853,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("samplePseudoBulk")) {
+if (!exists("samplePseudoBulk", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "samplePseudoBulk",
     function(.object, ...) standardGeneric("samplePseudoBulk"),

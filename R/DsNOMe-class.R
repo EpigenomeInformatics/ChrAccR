@@ -66,7 +66,7 @@ DsNOMe <- function(siteCoord, siteMeth, siteCovg, sampleAnnot, genome) {
 # Getters
 ################################################################################
 # generic is already defined in minfi package --> redefine
-# if (!isGeneric("getMeth")) {
+# if (!exists("getMeth", envir = topenv(environment()), inherits = FALSE)) {
 setGeneric(
   "getMeth",
   function(.object, ...) standardGeneric("getMeth"),
@@ -104,7 +104,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getCovg")) {
+if (!exists("getCovg", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getCovg",
     function(.object, ...) standardGeneric("getCovg"),
@@ -171,7 +171,7 @@ setMethod(
 ################################################################################
 # Summary functions
 ################################################################################
-if (!isGeneric("mergeStrands")) {
+if (!exists("mergeStrands", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "mergeStrands",
     function(.object, ...) standardGeneric("mergeStrands"),
@@ -279,7 +279,7 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!isGeneric("getRegionMapping")) {
+if (!exists("getRegionMapping", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getRegionMapping",
     function(.object, ...) standardGeneric("getRegionMapping"),
@@ -319,7 +319,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("regionAggregation")) {
+if (!exists("regionAggregation", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "regionAggregation",
     function(.object, ...) standardGeneric("regionAggregation"),
@@ -458,7 +458,7 @@ setMethod(
 ################################################################################
 
 # TODO: not tested yet
-if (!isGeneric("removeRegions")) {
+if (!exists("removeRegions", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "removeRegions",
     function(.object, ...) standardGeneric("removeRegions"),
@@ -533,7 +533,7 @@ setMethod(
   }
 )
 
-if (!isGeneric("maskMethNA")) {
+if (!exists("maskMethNA", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "maskMethNA",
     function(.object, ...) standardGeneric("maskMethNA"),
@@ -592,7 +592,7 @@ setMethod(
   }
 )
 
-if (!isGeneric("normalizeMeth")) {
+if (!exists("normalizeMeth", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "normalizeMeth",
     function(.object, ...) standardGeneric("normalizeMeth"),

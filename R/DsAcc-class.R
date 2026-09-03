@@ -75,7 +75,7 @@ DsAcc <- function(siteCoord, sampleAnnot, genome, diskDump = FALSE) {
 # Getters
 ################################################################################
 # Ensure that the generic function is defined
-if (!isGeneric("getSamples")) {
+if (!exists("getSamples", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getSamples",
     function(.object) standardGeneric("getSamples"),
@@ -116,7 +116,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getSampleAnnot")) {
+if (!exists("getSampleAnnot", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getSampleAnnot",
     function(.object) standardGeneric("getSampleAnnot"),
@@ -146,7 +146,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getGenome")) {
+if (!exists("getGenome", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getGenome",
     function(.object) standardGeneric("getGenome"),
@@ -176,7 +176,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getRegionTypes")) {
+if (!exists("getRegionTypes", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getRegionTypes",
     function(.object, ...) standardGeneric("getRegionTypes"),
@@ -210,7 +210,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getCoord")) {
+if (!exists("getCoord", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getCoord",
     function(.object, ...) standardGeneric("getCoord"),
@@ -245,7 +245,7 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!isGeneric("getNRegions")) {
+if (!exists("getNRegions", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getNRegions",
     function(.object, ...) standardGeneric("getNRegions"),
@@ -306,7 +306,7 @@ setMethod(
 ################################################################################
 # Maniputlating DsAcc objects
 ################################################################################
-if (!isGeneric("addSampleAnnotCol")) {
+if (!exists("addSampleAnnotCol", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "addSampleAnnotCol",
     function(.object, ...) standardGeneric("addSampleAnnotCol"),
@@ -352,7 +352,7 @@ setMethod(
 )
 #-------------------------------------------------------------------------------
 # TODO: not tested yet
-if (!isGeneric("removeRegions")) {
+if (!exists("removeRegions", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "removeRegions",
     function(.object, ...) standardGeneric("removeRegions"),
@@ -573,7 +573,7 @@ loadDsAcc <- function(path) {
 ################################################################################
 # Retrieving differential comparison info
 ################################################################################
-if (!isGeneric("getComparisonTable")) {
+if (!exists("getComparisonTable", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "getComparisonTable",
     function(.object, ...) standardGeneric("getComparisonTable"),

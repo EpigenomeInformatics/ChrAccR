@@ -65,6 +65,7 @@ VignetteBuilder: knitr
 Encoding: UTF-8
 RoxygenNote: 7.3.3
 Collate: 
+    'AllGenerics.R'
     'ChrAccR.R'
     'DsAcc-class.R'
     'DsASC-class.R'

@@ -1,4 +1,4 @@
-if (!isGeneric("createReport_normalization")) {
+if (!exists("createReport_normalization", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric(
     "createReport_normalization",
     function(.object, ...) standardGeneric("createReport_normalization"),

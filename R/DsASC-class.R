@@ -132,7 +132,7 @@ setMethod("show", "DsASC", function(object) {
 # Getters  (allele counts)
 # ==============================================================================
 
-if (!isGeneric("getCounts")) {
+if (!exists("getCounts", envir = topenv(environment()), inherits = FALSE)) {
   setGeneric("getCounts", function(.object, ...) standardGeneric("getCounts"), signature = c(".object"))
 }
 

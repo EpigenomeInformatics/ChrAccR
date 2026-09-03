@@ -13,6 +13,8 @@
 #' @param motifs either a character string (currently "jaspar2018", "jaspar2020", "jaspar_vert" and sets contained in \code{chromVARmotifs} ("homer", "encode", "cisbp") are supported)
 #'               or an object containing PWMs that can be used by \code{motifmatchr::matchMotifs} (such as a \code{PFMatrixList} or \code{PWMatrixList} object)
 #' @return a list containing objects to be used as arguments for \code{motifmatchr}
+#' @importFrom BiocGenerics organism
+#' 
 #' @export
 prepareMotifmatchr <- function(genome, motifs) {
   res <- list()
@@ -22,8 +24,7 @@ prepareMotifmatchr <- function(genome, motifs) {
   if (!is.element("BSgenome", class(genomeObj))) {
     genomeObj <- getGenomeObject(genome)
   }
-  spec <- provider(genomeObj) # Extract the provider (e.g., "Homo sapiens" or "Mus musculus")
-
+  spec <- BiocGenerics::organism(genomeObj)
   # get the motif PWMs
   motifL <- TFBSTools::PWMatrixList()
   if (is.character(motifs)) {
