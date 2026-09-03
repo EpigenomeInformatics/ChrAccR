@@ -82,6 +82,15 @@ setGeneric("maskMethNA", function(.object, ...) standardGeneric("maskMethNA"), s
 setGeneric("normalizeMeth", function(.object, ...) standardGeneric("normalizeMeth"), signature=c(".object"))
 
 ################################################################################
+# DsASC (Allele-Specific) Generics
+################################################################################
+setGeneric("getRefCounts", function(object, ...) standardGeneric("getRefCounts"))
+setGeneric("getAltCounts", function(object, ...) standardGeneric("getAltCounts"))
+setGeneric("getAllelicBalance", function(object, minCoverage = 0, ...) standardGeneric("getAllelicBalance"))
+setGeneric("getAccessibility", function(object, ...) standardGeneric("getAccessibility"))
+setGeneric("getPeaks", function(object, ...) standardGeneric("getPeaks"))
+
+################################################################################
 # Report Generics
 ################################################################################
 setGeneric("createReport", function(.object, ...) standardGeneric("createReport"), signature=c(".object"))

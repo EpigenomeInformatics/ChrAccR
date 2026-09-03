@@ -8,8 +8,22 @@
 \description{
 Tools for analyzing chromatin accessibility data in R. Currently supports ATAC-seq and NOMe-seq data analysis.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://epigenomeinformatics.github.io/ChrAccR}
+  \item \url{https://github.com/EpigenomeInformatics/ChrAccR}
+  \item Report bugs at \url{https://github.com/EpigenomeInformatics/ChrAccR/issues}
+}
+
+}
 \author{
-\strong{Maintainer}: Fabian Mueller \email{muellerf@stanford.edu} (\href{https://orcid.org/0000-0001-5809-2321}{ORCID})
+\strong{Maintainer}: Fabian Mueller \email{fabian.mueller@uni-saarland.de} (\href{https://orcid.org/0000-0001-5809-2321}{ORCID})
+
+Authors:
+\itemize{
+  \item Irem B. Gündüz \email{irembgunduz@gmail.com} (\href{https://orcid.org/0000-0003-2641-0916}{ORCID})
+}
 
 }
 \keyword{internal}

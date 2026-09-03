@@ -1,10 +1,3 @@
-if (!exists("createReport_exploratory", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "createReport_exploratory",
-    function(.object, ...) standardGeneric("createReport_exploratory"),
-    signature = c(".object")
-  )
-}
 #' createReport_exploratory-methods
 #'
 #' Create a report summarizing exploratory analyses of an accessibility dataset

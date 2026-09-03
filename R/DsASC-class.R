@@ -132,10 +132,6 @@ setMethod("show", "DsASC", function(object) {
 # Getters  (allele counts)
 # ==============================================================================
 
-if (!exists("getCounts", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric("getCounts", function(.object, ...) standardGeneric("getCounts"), signature = c(".object"))
-}
-
 #' @export
 setMethod(
   "getCounts", signature(.object = "DsASC"),
@@ -157,8 +153,6 @@ setMethod(
 )
 
 #' @export
-setGeneric("getRefCounts", function(object, ...) standardGeneric("getRefCounts"))
-#' @export
 setMethod(
   "getRefCounts", "DsASC",
   function(object, naIsZero = TRUE, ...) {
@@ -166,8 +160,6 @@ setMethod(
   }
 )
 
-#' @export
-setGeneric("getAltCounts", function(object, ...) standardGeneric("getAltCounts"))
 #' @export
 setMethod(
   "getAltCounts", "DsASC",
@@ -177,7 +169,6 @@ setMethod(
 )
 
 #' @export
-setGeneric("getAllelicBalance", function(object, minCoverage = 0, ...) standardGeneric("getAllelicBalance"))
 setMethod("getAllelicBalance", "DsASC", function(object, minCoverage = 0, ...) {
   alt   <- getAltCounts(object, ...)
   total <- getRefCounts(object, ...) + getAltCounts(object, ...)
@@ -204,7 +195,6 @@ setMethod("getAllelicBalance", "DsASC", function(object, minCoverage = 0, ...) {
 #' @return A matrix of peak accessibility counts.
 #' @author Irem B. GUNDUZ
 #' @export
-setGeneric("getAccessibility", function(object, ...) standardGeneric("getAccessibility"))
 setMethod("getAccessibility", "DsASC", function(object, asMatrix = TRUE, ...) {
   res <- object@accessibility
   if (asMatrix && !is.matrix(res) && object@diskDump) res <- as.matrix(res)
@@ -213,7 +203,6 @@ setMethod("getAccessibility", "DsASC", function(object, asMatrix = TRUE, ...) {
 
 #' Get peak coordinates
 #' @export
-setGeneric("getPeaks", function(object, ...) standardGeneric("getPeaks"))
 setMethod("getPeaks", "DsASC", function(object, ...) object@coord$peaks)
 
 #' Attach a peak accessibility matrix (+ peak coordinates) to a DsASC object
@@ -296,9 +285,6 @@ setMethod(
 # Filtering
 # ==============================================================================
 
-#' @export
-setGeneric("filterLowCovg", function(.object, ...) standardGeneric("filterLowCovg"))
-
 #' filterLowCovg-methods (DsASC)
 #' @param .object    A \code{\linkS4class{DsASC}} object.
 #' @param thresh     Integer. Minimum total coverage required per site per sample.
@@ -331,9 +317,6 @@ setMethod(
     return(.object)
   }
 )
-
-#' @export
-setGeneric("filterChroms", function(.object, ...) standardGeneric("filterChroms"))
 
 #' filterChroms-methods (DsASC)
 #'
@@ -666,7 +649,7 @@ filterForRecurrence <- function(stats_dt, minDonors = 3, fdrCutoff = 0.05) {
   recurrence_counts <- sig_dt[,
     list(
       n_donors_sig = length(unique(donor)),
-      mean_LFC     = mean(log2FC_norm)
+      mean_LFC     = mean(if ("log2FC_norm" %in% names(sig_dt)) log2FC_norm else log2FC)
     ),
     by = snpId
   ]

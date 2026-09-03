@@ -1,10 +1,3 @@
-if (!exists("createReport_normalization", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "createReport_normalization",
-    function(.object, ...) standardGeneric("createReport_normalization"),
-    signature = c(".object")
-  )
-}
 #' createReport_normalization-methods
 #'
 #' Create a report summarizing normalization

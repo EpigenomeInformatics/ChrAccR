@@ -75,14 +75,6 @@ DsAcc <- function(siteCoord, sampleAnnot, genome, diskDump = FALSE) {
 # Getters
 ################################################################################
 # Ensure that the generic function is defined
-if (!exists("getSamples", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getSamples",
-    function(.object) standardGeneric("getSamples"),
-    signature = c(".object")
-  )
-}
-
 #' getSamples-methods
 #'
 #' Return sample IDs in a dataset
@@ -116,13 +108,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getSampleAnnot", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getSampleAnnot",
-    function(.object) standardGeneric("getSampleAnnot"),
-    signature = c(".object")
-  )
-}
 #' getSampleAnnot-methods
 #'
 #' Return sample annotation table of a dataset
@@ -146,13 +131,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getGenome", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getGenome",
-    function(.object) standardGeneric("getGenome"),
-    signature = c(".object")
-  )
-}
 #' getGenome-methods
 #'
 #' Return the genome assembly
@@ -176,13 +154,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getRegionTypes", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getRegionTypes",
-    function(.object, ...) standardGeneric("getRegionTypes"),
-    signature = c(".object")
-  )
-}
 #' getRegionTypes-methods
 #'
 #' Return sample IDs in a dataset
@@ -210,13 +181,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getCoord", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getCoord",
-    function(.object, ...) standardGeneric("getCoord"),
-    signature = c(".object")
-  )
-}
 #' getCoord-methods
 #'
 #' Return coordinates of sites/regions in a dataset
@@ -245,13 +209,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getNRegions", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getNRegions",
-    function(.object, ...) standardGeneric("getNRegions"),
-    signature = c(".object")
-  )
-}
 #' getNRegions-methods
 #'
 #' Return the number of regions of a given type
@@ -306,13 +263,6 @@ setMethod(
 ################################################################################
 # Maniputlating DsAcc objects
 ################################################################################
-if (!exists("addSampleAnnotCol", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "addSampleAnnotCol",
-    function(.object, ...) standardGeneric("addSampleAnnotCol"),
-    signature = c(".object")
-  )
-}
 #' addSampleAnnotCol-methods
 #'
 #' add a sample annotation column to the sample annotation table
@@ -352,13 +302,6 @@ setMethod(
 )
 #-------------------------------------------------------------------------------
 # TODO: not tested yet
-if (!exists("removeRegions", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "removeRegions",
-    function(.object, ...) standardGeneric("removeRegions"),
-    signature = c(".object")
-  )
-}
 #' removeRegions-methods
 #'
 #' Remove the specified sites or regions from an object
@@ -573,13 +516,6 @@ loadDsAcc <- function(path) {
 ################################################################################
 # Retrieving differential comparison info
 ################################################################################
-if (!exists("getComparisonTable", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getComparisonTable",
-    function(.object, ...) standardGeneric("getComparisonTable"),
-    signature = c(".object")
-  )
-}
 #' getComparisonTable-methods
 #'
 #' Retrieve a table describing pairwise comparisons on a \code{\linkS4class{DsAcc}} object

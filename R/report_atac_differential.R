@@ -1,10 +1,3 @@
-if (!exists("createReport_differential", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "createReport_differential",
-    function(.object, ...) standardGeneric("createReport_differential"),
-    signature = c(".object")
-  )
-}
 #' createReport_differential-methods
 #'
 #' Create a report summarizing differential accessibility analysis

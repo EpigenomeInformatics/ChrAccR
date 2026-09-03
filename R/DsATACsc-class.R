@@ -58,13 +58,6 @@ DsATACsc <- function(sampleAnnot, genome, diskDump = FALSE, diskDump.fragments =
 ################################################################################
 # Single-cell methods
 ################################################################################
-if (!exists("simulateDoublets", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "simulateDoublets",
-    function(.object, ...) standardGeneric("simulateDoublets"),
-    signature = c(".object")
-  )
-}
 #' simulateDoublets-methods
 #'
 #' EXPERIMENTAL: Simulate doublets by adding counts in matrices for each region set
@@ -168,13 +161,6 @@ setMethod(
 )
 #-------------------------------------------------------------------------------
 
-if (!exists("getScQcStatsTab", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getScQcStatsTab",
-    function(.object, ...) standardGeneric("getScQcStatsTab"),
-    signature = c(".object")
-  )
-}
 #' getScQcStatsTab-methods
 #'
 #' Retrieve a table of QC statistics for single cells
@@ -235,13 +221,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("filterCellsTssEnrichment", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "filterCellsTssEnrichment",
-    function(.object, ...) standardGeneric("filterCellsTssEnrichment"),
-    signature = c(".object")
-  )
-}
 #' filterCellsTssEnrichment-methods
 #'
 #' Filter out cells with low TSS enrichment
@@ -291,13 +270,6 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 
-if (!exists("unsupervisedAnalysisSc", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "unsupervisedAnalysisSc",
-    function(.object, ...) standardGeneric("unsupervisedAnalysisSc"),
-    signature = c(".object")
-  )
-}
 #' unsupervisedAnalysisSc-methods
 #'
 #' Perform unsupervised analysis on single-cell data. Performs dimensionality reduction
@@ -392,13 +364,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("dimRed_UMAP", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "dimRed_UMAP",
-    function(.object, ...) standardGeneric("dimRed_UMAP"),
-    signature = c(".object")
-  )
-}
 #' dimRed_UMAP-methods
 #'
 #' Retrieve dimension reduction embedding and object using UMAP
@@ -524,13 +489,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("iterativeLSI", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "iterativeLSI",
-    function(.object, ...) standardGeneric("iterativeLSI"),
-    signature = c(".object")
-  )
-}
 #' iterativeLSI-methods
 #'
 #' Perform iterative LSI clustering and dimension reduction as described in doi:10.1038/s41587-019-0332-7
@@ -800,13 +758,6 @@ setMethod(
 
 
 #-------------------------------------------------------------------------------
-if (!exists("mergePseudoBulk", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "mergePseudoBulk",
-    function(.object, ...) standardGeneric("mergePseudoBulk"),
-    signature = c(".object")
-  )
-}
 #' mergePseudoBulk-methods
 #'
 #' Merge cells into pseudobulk samples based on annotation
@@ -853,13 +804,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("samplePseudoBulk", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "samplePseudoBulk",
-    function(.object, ...) standardGeneric("samplePseudoBulk"),
-    signature = c(".object")
-  )
-}
 #' samplePseudoBulk-methods
 #'
 #' Samples pseudo-bulk samples from single-cells

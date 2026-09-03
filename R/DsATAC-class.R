@@ -89,13 +89,6 @@ DsATAC <- function(sampleAnnot, genome, diskDump = FALSE, diskDump.fragments = T
 ################################################################################
 # Getters
 ################################################################################
-if (!exists("getCounts", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getCounts",
-    function(.object, ...) standardGeneric("getCounts"),
-    signature = c(".object")
-  )
-}
 #' getCounts-methods
 #'
 #' Return table of count values
@@ -176,13 +169,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("getCountsSE", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getCountsSE",
-    function(.object, ...) standardGeneric("getCountsSE"),
-    signature = c(".object")
-  )
-}
 #' getCountsSE-methods
 #'
 #' Return a \code{SummarizedExperiment} object of count values
@@ -222,13 +208,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getFragmentGr", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getFragmentGr",
-    function(.object, ...) standardGeneric("getFragmentGr"),
-    signature = c(".object")
-  )
-}
 #' getFragmentGr-methods
 #'
 #' Return a \code{GRanges} object of fragment data for a given sample
@@ -267,13 +246,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getFragmentGrl", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getFragmentGrl",
-    function(.object, ...) standardGeneric("getFragmentGrl"),
-    signature = c(".object")
-  )
-}
 #' getFragmentGrl-methods
 #'
 #' Return a list of \code{GRanges} objects of fragment data for a given set of samples
@@ -335,13 +307,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("getFragmentNum", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getFragmentNum",
-    function(.object, ...) standardGeneric("getFragmentNum"),
-    signature = c(".object")
-  )
-}
 #' getFragmentNum-methods
 #'
 #' Return the number of fragments in the \code{\linkS4class{DsATAC}} object
@@ -370,13 +335,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getInsertionSites", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getInsertionSites",
-    function(.object, ...) standardGeneric("getInsertionSites"),
-    signature = c(".object")
-  )
-}
 #' getInsertionSites-methods
 #'
 #' Return a list of insertion sites (Tn5 cut sites) for each sample
@@ -412,13 +370,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getCoverage", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getCoverage",
-    function(.object, ...) standardGeneric("getCoverage"),
-    signature = c(".object")
-  )
-}
 #' getCoverage-methods
 #'
 #' Return a list of genome-wide coverage from insertion sites
@@ -532,13 +483,6 @@ setMethod(
 # 	}
 # )
 #-------------------------------------------------------------------------------
-if (!exists("regionAggregation", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "regionAggregation",
-    function(.object, ...) standardGeneric("regionAggregation"),
-    signature = c(".object")
-  )
-}
 #' regionAggregation-methods
 #'
 #' Aggregate signal counts across a set of regions
@@ -745,13 +689,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("mergeSamples", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "mergeSamples",
-    function(.object, ...) standardGeneric("mergeSamples"),
-    signature = c(".object")
-  )
-}
 #' mergeSamples-methods
 #'
 #' Merge signal and insertion data across samples
@@ -909,13 +846,6 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 # IN DEVELOPMENT
-if (!exists("join", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "join",
-    function(.object, ...) standardGeneric("join"),
-    signature = c(".object")
-  )
-}
 #' join-methods
 #'
 #' Combine two \code{\linkS4class{DsATAC}} objects
@@ -1088,13 +1018,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("removeFragmentData", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "removeFragmentData",
-    function(object) standardGeneric("removeFragmentData"),
-    signature = c("object")
-  )
-}
 #' removeFragmentData-methods
 #'
 #' Removes fragment data from \code{\linkS4class{DsATAC}} object (e.g. to save space)
@@ -1120,13 +1043,6 @@ setMethod(
 )
 #-------------------------------------------------------------------------------
 # EXPERIMENTAL
-if (!exists("undiskFragmentData", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "undiskFragmentData",
-    function(object) standardGeneric("undiskFragmentData"),
-    signature = c("object")
-  )
-}
 #' undiskFragmentData-methods
 #'
 #' converts disk-backed fragment data to in-memory fragment data
@@ -1153,13 +1069,6 @@ setMethod(
 )
 #-------------------------------------------------------------------------------
 # EXPERIMENTAL
-if (!exists("subsampleFragmentData", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "subsampleFragmentData",
-    function(object, ...) standardGeneric("subsampleFragmentData"),
-    signature = c("object")
-  )
-}
 #' subsampleFragmentData-methods
 #'
 #' subsample the fragment data to reduce object size
@@ -1196,13 +1105,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("addCountDataFromBam", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "addCountDataFromBam",
-    function(.object, ...) standardGeneric("addCountDataFromBam"),
-    signature = c(".object")
-  )
-}
 #' addCountDataFromBam-methods
 #'
 #' Add count data to DsATAC object based on bam files
@@ -1256,13 +1158,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("addCountDataFromGRL", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "addCountDataFromGRL",
-    function(.object, ...) standardGeneric("addCountDataFromGRL"),
-    signature = c(".object")
-  )
-}
 #' addCountDataFromGRL-methods
 #'
 #' Add count data to DsATAC object based on a list of GRanges objects
@@ -1369,13 +1264,6 @@ setMethod(
 # 	}
 # )
 #-------------------------------------------------------------------------------
-if (!exists("addSignalDataFromGRL", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "addSignalDataFromGRL",
-    function(.object, ...) standardGeneric("addSignalDataFromGRL"),
-    signature = c(".object")
-  )
-}
 #' addSignalDataFromGRL-methods
 #'
 #' Add signal data to DsATAC object based on a list of GRanges objects
@@ -1429,13 +1317,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("addInsertionDataFromBam", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "addInsertionDataFromBam",
-    function(.object, ...) standardGeneric("addInsertionDataFromBam"),
-    signature = c(".object")
-  )
-}
 #' addInsertionDataFromBam-methods
 #'
 #' Add insertion data to DsATAC object based on bam or fragment bed files
@@ -1536,13 +1417,6 @@ setMethod(
 ################################################################################
 # Manipulating DsATAC objects
 ################################################################################
-if (!exists("removeRegions", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "removeRegions",
-    function(.object, ...) standardGeneric("removeRegions"),
-    signature = c(".object")
-  )
-}
 #' removeRegions-methods
 #'
 #' Remove the specified sites or regions from an object
@@ -1597,13 +1471,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("removeRegionType", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "removeRegionType",
-    function(.object, ...) standardGeneric("removeRegionType"),
-    signature = c(".object")
-  )
-}
 #' removeRegionType-methods
 #'
 #' Remove the specified region type from an object
@@ -1638,13 +1505,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("removeRegionData", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "removeRegionData",
-    function(.object) standardGeneric("removeRegionData"),
-    signature = c(".object")
-  )
-}
 #' removeRegionData-methods
 #'
 #' Remove all region data from a \code{\linkS4class{DsATAC}} object
@@ -1671,13 +1531,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("removeSamples", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "removeSamples",
-    function(.object, ...) standardGeneric("removeSamples"),
-    signature = c(".object")
-  )
-}
 #' removeSamples-methods
 #'
 #' Remove samples from a \code{\linkS4class{DsATAC}} object
@@ -1781,13 +1634,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("transformCounts", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "transformCounts",
-    function(.object, ...) standardGeneric("transformCounts"),
-    signature = c(".object")
-  )
-}
 #' transformCounts-methods
 #'
 #' transform count data for an ATAC seq dataset
@@ -1992,13 +1838,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("filterLowCovg", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "filterLowCovg",
-    function(.object, ...) standardGeneric("filterLowCovg"),
-    signature = c(".object")
-  )
-}
 #' filterLowCovg-methods
 #'
 #' Filter regions with low read counts
@@ -2054,13 +1893,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("filterChroms", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "filterChroms",
-    function(.object, ...) standardGeneric("filterChroms"),
-    signature = c(".object")
-  )
-}
 #' filterChroms-methods
 #'
 #' Filter out regions based on chromosome list
@@ -2128,13 +1960,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("filterByGRanges", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "filterByGRanges",
-    function(.object, ...) standardGeneric("filterByGRanges"),
-    signature = c(".object")
-  )
-}
 #' filterByGRanges-methods
 #'
 #' Filter out regions based on a GRanges object
@@ -2213,13 +2038,6 @@ setMethod(
 ################################################################################
 # Analysis Utils
 ################################################################################
-if (!exists("regionSetCounts", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "regionSetCounts",
-    function(.object, ...) standardGeneric("regionSetCounts"),
-    signature = c(".object")
-  )
-}
 #' regionSetCounts-methods
 #'
 #' Overlap the insertion data with a list of region sets
@@ -2274,13 +2092,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getInsertionKmerFreq", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getInsertionKmerFreq",
-    function(.object, ...) standardGeneric("getInsertionKmerFreq"),
-    signature = c(".object")
-  )
-}
 #' getInsertionKmerFreq-methods
 #'
 #' compute kmer frequencies at insertion sites for each sample
@@ -2325,13 +2136,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("aggregateRegionCounts", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "aggregateRegionCounts",
-    function(.object, ...) standardGeneric("aggregateRegionCounts"),
-    signature = c(".object")
-  )
-}
 #' aggregateRegionCounts-methods
 #'
 #' Agregate counts across a set of regions, e.g. for footprinting analysis
@@ -2511,13 +2315,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getMotifEnrichment", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getMotifEnrichment",
-    function(.object, ...) standardGeneric("getMotifEnrichment"),
-    signature = c(".object")
-  )
-}
 #' getMotifEnrichment-methods
 #'
 #' Perform enrichment analysis for (TF) motifs of a query set of regions.
@@ -2621,13 +2418,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getChromVarDev", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getChromVarDev",
-    function(.object, ...) standardGeneric("getChromVarDev"),
-    signature = c(".object")
-  )
-}
 #' getChromVarDev-methods
 #'
 #' Compute chromVar deviations
@@ -2675,13 +2465,6 @@ setMethod(
 ################################################################################
 # Footprinting
 ################################################################################
-if (!exists("getMotifFootprints", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getMotifFootprints",
-    function(.object, ...) standardGeneric("getMotifFootprints"),
-    signature = c(".object")
-  )
-}
 #' getMotifFootprints-methods
 #'
 #' Perform enrichment analysis for (TF) motif footprinting
@@ -2844,13 +2627,6 @@ setMethod(
 ################################################################################
 # Differential analysis
 ################################################################################
-if (!isGeneric("getDESeq2Dataset")) {
-  setGeneric(
-    "getDESeq2Dataset",
-    function(.object, ...) standardGeneric("getDESeq2Dataset"),
-    signature = c(".object")
-  )
-}
 #' getDESeq2Dataset-methods
 #'
 #' Retrieve a differential expression dataset computed with DESeq2
@@ -2939,13 +2715,6 @@ setMethod(
   }
 )
 
-if (!exists("getDiffAcc", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getDiffAcc",
-    function(.object, ...) standardGeneric("getDiffAcc"),
-    signature = c(".object")
-  )
-}
 #' getDiffAcc-methods
 #'
 #' Compute differential accessibility
@@ -3068,13 +2837,6 @@ setMethod(
 ################################################################################
 # Export
 ################################################################################
-if (!exists("exportCountTracks", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "exportCountTracks",
-    function(.object, ...) standardGeneric("exportCountTracks"),
-    signature = c(".object")
-  )
-}
 #' exportCountTracks-methods
 #'
 #' export count data as genome tracks (e.g. for visualization in the browser)
@@ -3138,13 +2900,6 @@ setMethod(
 ################################################################################
 # Data processing / inference
 ################################################################################
-if (!exists("callPeaks", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "callPeaks",
-    function(.object, ...) standardGeneric("callPeaks"),
-    signature = c(".object")
-  )
-}
 #' callPeaks-methods
 #'
 #' Performs peak calling based on insertion sites
@@ -3358,13 +3113,6 @@ setMethod(
 ################################################################################
 # Plotting
 ################################################################################
-if (!exists("plotInsertSizeDistribution", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "plotInsertSizeDistribution",
-    function(.object, ...) standardGeneric("plotInsertSizeDistribution"),
-    signature = c(".object")
-  )
-}
 #' plotInsertSizeDistribution-methods
 #'
 #' Plot insert size distribution
@@ -3399,13 +3147,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getTssEnrichment", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getTssEnrichment",
-    function(.object, ...) standardGeneric("getTssEnrichment"),
-    signature = c(".object")
-  )
-}
 #' getTssEnrichment-methods
 #'
 #' Get TSS enrichment data and plot
@@ -3486,13 +3227,6 @@ setMethod(
 ################################################################################
 # Single-cell/ high-sample number analyses
 ################################################################################
-if (!exists("getTssEnrichmentBatch", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getTssEnrichmentBatch",
-    function(.object, ...) standardGeneric("getTssEnrichmentBatch"),
-    signature = c(".object")
-  )
-}
 #' getTssEnrichmentBatch-methods
 #'
 #' Get TSS enrichment data and plot
@@ -3637,13 +3371,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("getQuickTssEnrichment", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getQuickTssEnrichment",
-    function(.object, ...) standardGeneric("getQuickTssEnrichment"),
-    signature = c(".object")
-  )
-}
 #' getQuickTssEnrichment-methods
 #'
 #' [Experimental] Quick, heuristic version of TSS enrichment to just get scores for each
@@ -3737,13 +3464,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("getMonocleCellDataSet", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getMonocleCellDataSet",
-    function(.object, ...) standardGeneric("getMonocleCellDataSet"),
-    signature = c(".object")
-  )
-}
 #' getMonocleCellDataSet-methods
 #'
 #' Obtain \code{cell_data_set} object for analysis using the \code{monocle3} package
@@ -3806,13 +3526,6 @@ setMethod(
 
 #-------------------------------------------------------------------------------
 
-if (!exists("getCiceroGeneActivities", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getCiceroGeneActivities",
-    function(.object, ...) standardGeneric("getCiceroGeneActivities"),
-    signature = c(".object")
-  )
-}
 #' getCiceroGeneActivities-methods
 #'
 #' Obtain Cicero gene activities
@@ -3941,13 +3654,6 @@ setMethod(
 )
 
 
-if (!exists("getRBFGeneActivities", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getRBFGeneActivities",
-    function(.object, ...) standardGeneric("getRBFGeneActivities"),
-    signature = c(".object")
-  )
-}
 #' getRBFGeneActivities-methods
 #'
 #' [EXPERIMENTAL] Obtain gene activities by weighting counts using a Gaussian radial basis function (RBF)

@@ -1,8 +1,14 @@
 Package: ChrAccR
 Title: Analyzing chromatin accessibility data in R
 Description: Tools for analyzing chromatin accessibility data in R. Bulk and single-cell ATAC-seq data are supported.
-Authors@R: person("Fabian", "Mueller", email = "muellerf@stanford.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5809-2321"))
-Date: 2025-07-31
+Authors@R: c(
+    person("Fabian", "Mueller", email = "fabian.mueller@uni-saarland.de", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5809-2321")),
+    person("Irem B.", "Gündüz", email = "irembgunduz@gmail.com", role = "aut",
+           comment = c(ORCID = "0000-0003-2641-0916")))
+Date: 2026-09-03
+URL: https://epigenomeinformatics.github.io/ChrAccR, https://github.com/EpigenomeInformatics/ChrAccR
+BugReports: https://github.com/EpigenomeInformatics/ChrAccR/issues
 Suggests:
     ChrAccRex,
     muReportR,
@@ -60,7 +66,7 @@ Imports:
     utils,
     data.table
 License: GPL-2
-Version: 0.9.25
+Version: 0.9.26
 VignetteBuilder: knitr
 Encoding: UTF-8
 RoxygenNote: 7.3.3

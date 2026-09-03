@@ -1,10 +1,3 @@
-if (!exists("createReport_summary", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "createReport_summary",
-    function(.object, ...) standardGeneric("createReport_summary"),
-    signature = c(".object")
-  )
-}
 #' createReport_summary-methods
 #'
 #' Create a report summarizing an accessibility dataset

@@ -67,11 +67,6 @@ DsNOMe <- function(siteCoord, siteMeth, siteCovg, sampleAnnot, genome) {
 ################################################################################
 # generic is already defined in minfi package --> redefine
 # if (!exists("getMeth", envir = topenv(environment()), inherits = FALSE)) {
-setGeneric(
-  "getMeth",
-  function(.object, ...) standardGeneric("getMeth"),
-  signature = c(".object")
-)
 # }
 #' getMeth-methods
 #'
@@ -104,13 +99,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("getCovg", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getCovg",
-    function(.object, ...) standardGeneric("getCovg"),
-    signature = c(".object")
-  )
-}
 #' getCovg-methods
 #'
 #' Return table of read coverage values
@@ -171,13 +159,6 @@ setMethod(
 ################################################################################
 # Summary functions
 ################################################################################
-if (!exists("mergeStrands", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "mergeStrands",
-    function(.object, ...) standardGeneric("mergeStrands"),
-    signature = c(".object")
-  )
-}
 #' mergeStrands-methods
 #'
 #' Merge + and - strands of the dataset by adding read coverage and recomputing
@@ -279,13 +260,6 @@ setMethod(
 )
 
 #-------------------------------------------------------------------------------
-if (!exists("getRegionMapping", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "getRegionMapping",
-    function(.object, ...) standardGeneric("getRegionMapping"),
-    signature = c(".object")
-  )
-}
 #' getRegionMapping-methods
 #'
 #' Retrieve a mapping from regions to GC indices in the dataset
@@ -319,13 +293,6 @@ setMethod(
   }
 )
 #-------------------------------------------------------------------------------
-if (!exists("regionAggregation", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "regionAggregation",
-    function(.object, ...) standardGeneric("regionAggregation"),
-    signature = c(".object")
-  )
-}
 #' regionAggregation-methods
 #'
 #' Aggregate methylation levels and coverage values accross a set of regions
@@ -458,13 +425,6 @@ setMethod(
 ################################################################################
 
 # TODO: not tested yet
-if (!exists("removeRegions", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "removeRegions",
-    function(.object, ...) standardGeneric("removeRegions"),
-    signature = c(".object")
-  )
-}
 #' removeRegions-methods
 #'
 #' Remove the specified sites or regions from an object
@@ -533,13 +493,6 @@ setMethod(
   }
 )
 
-if (!exists("maskMethNA", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "maskMethNA",
-    function(.object, ...) standardGeneric("maskMethNA"),
-    signature = c(".object")
-  )
-}
 #' maskMethNA-methods
 #'
 #' Set the indices specified in a mask to NA
@@ -592,13 +545,6 @@ setMethod(
   }
 )
 
-if (!exists("normalizeMeth", envir = topenv(environment()), inherits = FALSE)) {
-  setGeneric(
-    "normalizeMeth",
-    function(.object, ...) standardGeneric("normalizeMeth"),
-    signature = c(".object")
-  )
-}
 #' normalizeMeth-methods
 #'
 #' Normalize methylation levels
