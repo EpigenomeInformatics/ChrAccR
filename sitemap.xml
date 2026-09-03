@@ -1,399 +1,173 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/overview.html</loc>
-  </url>
-  <url>
-    <loc>/articles/resource.html</loc>
-  </url>
-  <url>
-    <loc>/articles/singlecell.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ChrAccR.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsATAC-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsATAC.bam.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsATAC.cellranger.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsATAC.fragmentBed.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsATAC.snakeATAC.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsATACsc-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsATACsc.archr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsATACsc.fragments.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsAcc-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsNOMe-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DsNOMe.bisSNP.html</loc>
-  </url>
-  <url>
-    <loc>/reference/PWMatrixToProbMatrix.html</loc>
-  </url>
-  <url>
-    <loc>/reference/addSampleAnnotCol-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aggregateRegionCounts-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/callPeaks-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/cleanMem.html</loc>
-  </url>
-  <url>
-    <loc>/reference/colZscores.html</loc>
-  </url>
-  <url>
-    <loc>/reference/collapseMotifMatrix.html</loc>
-  </url>
-  <url>
-    <loc>/reference/computeDiffAcc.rnb.nome.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createReport_differential-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createReport_exploratory-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createReport_filtering-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createReport_normalization-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createReport_summary-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dimRed_UMAP-DsATACsc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/exportCountTracks-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fastqDirToTable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterByGRanges-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterCellsTssEnrichment-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterChroms-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterLowCovg-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/findNearestGeneForGr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/findOrderedNames.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getATACfragments.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getChrAccRAnnotationPackage.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getChromVarDev-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getCiceroGeneActivities-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getComparisonInfo.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getComparisonTable-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getConfigElement.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getConsensusPeakSet.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getCoord-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getCounts-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getCountsSE-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getCoverage-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getCovg-DsNOMe-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getDESeq2Dataset-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getDiffAcc-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getFragmentGr-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getFragmentGrl-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getFragmentNum-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getGenome-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getGenomeObject.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getGroupsFromTable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getInsertionKmerFreq-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getInsertionSites-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getJasparAnnot.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getJasparSymbols.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getMeth-DsNOMe-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getMonocleCellDataSet-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getMotifClustering.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getMotifDistMat.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getMotifDistMat.jaspar.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getMotifEnrichment-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getMotifFootprints-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getMotifOccurrences.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getNRegions-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getNonOverlappingByScore.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getPeakSet.snakeATAC.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getQuickTssEnrichment-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getRegionMapping-DsNOMe-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getRegionTypes-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getSampleAnnot-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getSampleMetrics.snakeATAC.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getSamples-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getScQcStatsTab-DsATACsc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getTfAnnot.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getTssEnrichment-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getTssEnrichmentBatch-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hmSeqLogo.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/isCanonicalChrom.html</loc>
-  </url>
-  <url>
-    <loc>/reference/iterativeLSI-DsATACsc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/join-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/length-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/loadConfig.html</loc>
-  </url>
-  <url>
-    <loc>/reference/loadDsAcc.html</loc>
-  </url>
-  <url>
-    <loc>/reference/maskMethNA-DsNOMe-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/mergePseudoBulk-DsATACsc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/mergeSamples-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/mergeStrands-DsNOMe-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/normalizeMeth-DsNOMe-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plotInsertSizeDistribution-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/prepareMotifmatchr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/projectMatrix_UMAP.html</loc>
-  </url>
-  <url>
-    <loc>/reference/readMACS2peakFile.html</loc>
-  </url>
-  <url>
-    <loc>/reference/regionAggregation-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/regionAggregation-DsNOMe-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/regionSetCounts-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/removeFragmentData-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/removeRegionData-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/removeRegionType-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/removeRegions-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/removeRegions-DsAcc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/removeRegions-DsNOMe-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/removeSamples-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/rowZscores.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac_chromvar.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac_differential.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac_exploratory.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac_filtering.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac_normalization.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac_peakcalling.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac_qc.html</loc>
-  </url>
-  <url>
-    <loc>/reference/run_atac_sc_unsupervised.html</loc>
-  </url>
-  <url>
-    <loc>/reference/safeMatrixStats.html</loc>
-  </url>
-  <url>
-    <loc>/reference/samplePseudoBulk-DsATACsc-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/saveConfig.html</loc>
-  </url>
-  <url>
-    <loc>/reference/saveDsAcc.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setConfigElement.html</loc>
-  </url>
-  <url>
-    <loc>/reference/sub-DsATAC-ANY-ANY-ANY-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/transformCounts-DsATAC-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/unsupervisedAnalysisSc-DsATACsc-method.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/404.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/articles/allelespec.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/articles/index.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/articles/overview.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/articles/resource.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/articles/singlecell.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/authors.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/index.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/news/index.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ChrAccR-package.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsASC-class.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsASC.gatk.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsASC.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsATAC-class.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsATAC.bam.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsATAC.cellranger.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsATAC.fragmentBed.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsATAC.snakeATAC.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsATACsc-class.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsATACsc.archr.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsATACsc.fragments.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsAcc-class.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsNOMe-class.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/DsNOMe.bisSNP.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/PWMatrixToProbMatrix.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/addSampleAnnotCol-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/aggregateRegionCounts-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/annotateASCSites.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascActivityStat.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascAggregate.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascBestDonor.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascDonorDepth.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascDropHomozygous.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascFilterRegions.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascOrientReads.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascPoolReplicates.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascSharing.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascSitePosterior.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascStratum.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascTFActivity.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascTFActivityByDonor.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascTFActivitySwitch.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/ascTFFamily.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/buildMasterSNPs.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/calcASCStatistics.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/callPeaks-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/cleanMem.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/colZscores.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/collapseMotifMatrix.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/computeDiffAcc.rnb.nome.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/createReport_differential-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/createReport_exploratory-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/createReport_filtering-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/createReport_normalization-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/createReport_summary-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/dimRed_UMAP-DsATACsc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/estimateSharedImbalance.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/exportCountTracks-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/fastqDirToTable.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/filterASCByPeaks.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/filterByGRanges-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/filterCellsTssEnrichment-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/filterChroms-DsASC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/filterChroms-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/filterForRecurrence.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/filterLowCovg-DsASC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/filterLowCovg-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/findNearestGeneForGr.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/findOrderedNames.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getATACfragments.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getAccessibility-DsASC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getChrAccRAnnotationPackage.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getChromVarDev-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getCiceroGeneActivities-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getComparisonInfo.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getComparisonTable-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getConfigElement.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getConsensusPeakSet.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getCoord-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getCounts-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getCountsSE-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getCoverage-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getCovg-DsNOMe-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getDESeq2Dataset-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getDiffAcc-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getFragmentGr-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getFragmentGrl-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getFragmentNum-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getGenome-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getGenomeObject.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getGroupsFromTable.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getInsertionKmerFreq-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getInsertionSites-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getJasparAnnot.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getJasparSymbols.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getMeth-DsNOMe-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getMonocleCellDataSet-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getMotifClustering.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getMotifDistMat.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getMotifDistMat.jaspar.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getMotifEnrichment-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getMotifFootprints-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getMotifOccurrences.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getNRegions-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getNonOverlappingByScore.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getPeakSet.snakeATAC.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getPeaks-DsASC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getQuickTssEnrichment-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getRegionMapping-DsNOMe-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getRegionTypes-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getSampleAnnot-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getSampleMetrics.snakeATAC.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getSamples-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getScQcStatsTab-DsATACsc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getTfAnnot.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getTssEnrichment-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/getTssEnrichmentBatch-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/hmSeqLogo.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/index.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/isCanonicalChrom.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/iterativeLSI-DsATACsc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/join-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/length-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/loadConfig.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/loadDsAcc.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/maskMethNA-DsNOMe-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/mergeDsASCArray.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/mergePseudoBulk-DsATACsc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/mergeSamples-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/mergeStrands-DsNOMe-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/normalizeMeth-DsNOMe-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/plotASCBalance.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/plotASCManhattan.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/plotASCTFActivity.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/plotASCTFActivityScatter.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/plotASCTFDonorDelta.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/plotASCVolcano.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/plotInsertSizeDistribution-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/prepareMotifmatchr.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/projectMatrix_UMAP.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/readMACS2peakFile.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/regionAggregation-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/regionAggregation-DsNOMe-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/regionSetCounts-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/removeFragmentData-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/removeRegionData-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/removeRegionType-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/removeRegions-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/removeRegions-DsAcc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/removeRegions-DsNOMe-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/removeSamples-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/rowZscores.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac_chromvar.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac_differential.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac_exploratory.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac_filtering.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac_normalization.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac_peakcalling.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac_qc.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/run_atac_sc_unsupervised.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/safeMatrixStats.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/samplePseudoBulk-DsATACsc-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/saveConfig.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/saveDsAcc.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/setAccessibility.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/setConfigElement.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/sub-DsATAC-ANY-ANY-ANY-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/transformCounts-DsATAC-method.html</loc></url>
+<url><loc>https://epigenomeinformatics.github.io/ChrAccR/reference/unsupervisedAnalysisSc-DsATACsc-method.html</loc></url>
 </urlset>
+
