@@ -115,32 +115,23 @@ Gunduz</h4>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>A heterozygous site carries two alleles that share one nucleus, one
-set of trans-acting factors and one library preparation. Anything that
-differs between the reads carrying the reference allele and the reads
-carrying the alternative allele therefore has to come from the sequence
-itself. This is what makes allele-specific chromatin accessibility (ASC)
-a better-controlled measurement than comparing accessibility between
-individuals: the second allele is the control, and it is a matched
-one.</p>
+<p>Both alleles of a heterozygous site sit in the same nucleus, see the
+same transcription factors and go through the same library preparation.
+Any difference in read counts between them comes from the sequence. That
+is what makes allele-specific chromatin accessibility (ASC) an
+internally controlled measurement: the second allele is the control.</p>
 <p><code>AlleleSpeC</code> is the ASC layer of <code>ChrAccR</code>. It
 takes WASP-corrected BAM files and donor genotypes, counts reference and
-alternative reads at every heterozygous site inside consensus peaks,
-tests each site for imbalance, and asks whether the imbalance follows
-the allele a transcription factor is predicted to bind. The data
-structure carrying all of this is <code>DsASC</code>, a
-<code>DsAcc</code> subclass holding two aligned count matrices
-(<code>ref</code> and <code>alt</code>, sites x samples) alongside the
-allele-agnostic peak accessibility matrix, so that allelic and total
-signal never drift apart.</p>
-<p>This vignette walks the pipeline end to end. The heavy stages need
-cluster resources and tens of gigabytes of BAM files, so they are shown
-but not executed. Everything downstream of counting runs on a small
-example object shipped with the package, cut from a real run by
-<code>inst/scripts/make_vignette_data.R</code>. If that object has not
-been built yet the vignette simulates an equivalent dataset instead, so
-it always knits. The last section covers what stays out of the
-repository, and why.</p>
+alternative reads at heterozygous sites inside consensus peaks, tests
+each site for imbalance, and checks whether the imbalance follows the
+allele a transcription factor is predicted to bind. <code>DsASC</code>
+holds the data. It is a <code>DsAcc</code> subclass with two aligned
+count matrices (<code>ref</code> and <code>alt</code>, sites x samples)
+and the allele-agnostic peak matrix in the same object.</p>
+<p>This vignette covers the pipeline end to end. The stages that need a
+cluster are shown but not run. Everything after counting runs on a small
+example object in <code>inst/extdata</code>, built by
+<code>inst/scripts/make_vignette_data.R</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="the-shape-of-the-pipeline">The shape of the pipeline<a class="anchor" aria-label="anchor" href="#the-shape-of-the-pipeline"></a>
@@ -235,22 +226,21 @@ repository, and why.</p>
 </tr>
 </tbody>
 </table>
-<p>The first two stages are the expensive ones, and they are also the
-ones that decide whether the result is real. Everything after them is
-comparatively cheap, and the package functions assume both have been
-done properly.</p>
+<p>Genotyping and WASP are the slow steps, and they are also the ones
+that decide whether the results mean anything. The R functions below
+assume both were done properly.</p>
 </div>
 <div class="section level2">
 <h2 id="requirements">Requirements<a class="anchor" aria-label="anchor" href="#requirements"></a>
 </h2>
-<p>Beyond the standard <code>ChrAccR</code> dependencies, the ASC layer
-draws on a few additional packages. Genotype reading and pileup counting
-need <code>VariantAnnotation</code> and <code>Rsamtools</code>;
-disk-backed counting needs <code>HDF5Array</code> and
-<code>DelayedArray</code>; the sharing estimate needs <code>ashr</code>;
-the motif stage needs <code>JASPAR2020</code>, <code>TFBSTools</code>,
-<code>motifmatchr</code> and a <code>BSgenome</code> package for the
-assembly you work in.</p>
+<p>The ASC layer needs a few packages beyond the standard
+<code>ChrAccR</code> dependencies. <code>VariantAnnotation</code> and
+<code>Rsamtools</code> for reading genotypes and running the pileup,
+<code>HDF5Array</code> and <code>DelayedArray</code> for disk-backed
+counting, <code>ashr</code> for the sharing estimate, and
+<code>JASPAR2020</code>, <code>TFBSTools</code>,
+<code>motifmatchr</code> plus a <code>BSgenome</code> package for the
+motif step.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VariantAnnotation"</span>, <span class="st">"Rsamtools"</span>, <span class="st">"HDF5Array"</span>, <span class="st">"DelayedArray"</span>,</span>
 <span>                       <span class="st">"JASPAR2020"</span>, <span class="st">"TFBSTools"</span>, <span class="st">"motifmatchr"</span>,</span>
@@ -266,36 +256,31 @@ assembly you work in.</p>
 <div class="section level2">
 <h2 id="before-r-genotypes-and-bias-correction">Before R: genotypes and bias correction<a class="anchor" aria-label="anchor" href="#before-r-genotypes-and-bias-correction"></a>
 </h2>
-<p>Two things have to be true before a single allele is counted, and no
-amount of downstream statistics can repair either of them.</p>
-<p>The first is that the heterozygous sites really are heterozygous.
-Genotypes are called per donor, jointly over all of that donor’s
-libraries, so that a site is supported by the donor’s full read depth
-rather than by one shallow sample. Only biallelic SNVs called
-heterozygous are kept, and the result is written one file per donor.</p>
+<p>Two things have to be right before any allele is counted. Neither can
+be repaired downstream.</p>
+<p>The heterozygous sites have to be really heterozygous. Genotypes are
+called per donor, jointly across all of that donor’s libraries, so a
+call rests on the donor’s full depth instead of one shallow sample. Only
+biallelic SNVs called heterozygous are kept, one file per donor.</p>
+<p>And reads carrying the alternative allele have to survive alignment.
+A read that differs from the reference maps slightly worse than one that
+matches, which pushes every site toward the reference allele and
+manufactures ASC out of nothing. WASP re-maps each overlapping read with
+its alleles swapped and throws away any read that does not come back to
+the same position.</p>
+<p>Neither step runs from ChrAccR. You need to run the genotyping and
+WASP scripts first. They live in the AlleleSpeC repository at <a href="https://github.com/EpigenomeInformatics/allele_spec" class="external-link uri">https://github.com/EpigenomeInformatics/allele_spec</a>,
+together with an audit script that checks whether the correction
+actually worked.</p>
+<p>Run that audit even when WASP reports success. It measures the pooled
+reference fraction per sample at that donor’s heterozygous sites. A
+corrected library sits near 0.5; anything above roughly 0.55 is still
+biased and will contaminate everything downstream.</p>
+<p>The sample annotation needs <code>sampleId</code>,
+<code>bamFilename</code> and <code>donor</code> at minimum, plus
+<code>cellType</code> and <code>stimulus</code> for grouping and
+contrasts. Row names have to be the sample identifiers.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.html" class="external-link">system</a></span><span class="op">(</span><span class="st">"bash prep/01_call_variants.sh tables/sampleAnnot_filtered.csv"</span><span class="op">)</span></span></code></pre></div>
-<p>The second is that reads carrying the alternative allele are not
-quietly lost during alignment. A read that differs from the reference
-maps slightly worse than one that matches it, which pushes every site
-toward the reference allele and manufactures ASC out of nothing. WASP
-removes this by re-mapping each overlapping read with its alleles
-swapped and discarding any read that does not return to the same
-position.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.html" class="external-link">system</a></span><span class="op">(</span><span class="st">"Rscript prep/03_wasp.R"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/system.html" class="external-link">system</a></span><span class="op">(</span><span class="st">"Rscript prep/04_wasp_audit.R"</span><span class="op">)</span></span></code></pre></div>
-<p>The audit step is worth running even when the pipeline reports
-success. It measures the pooled reference fraction per sample at that
-donor’s heterozygous sites; a corrected library sits near 0.5, and
-anything drifting above roughly 0.55 is still biased and will
-contaminate every result that follows.</p>
-<p>The sample annotation that carries the rest of the pipeline needs
-<code>sampleId</code>, <code>bamFilename</code> and <code>donor</code>
-at minimum, with <code>cellType</code> and <code>stimulus</code> added
-for grouping and contrasts. Row names must be the sample
-identifiers.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"tables/sampleAnnot_filtered.csv"</span><span class="op">)</span></span>
 <span><span class="va">meta</span><span class="op">[</span>, <span class="va">donor</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">donor</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">meta</span><span class="op">[</span>, <span class="va">bamFilename</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">waspDir</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">sampleId</span>, <span class="st">"_wasp.bam"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
@@ -304,31 +289,30 @@ identifiers.</p>
 <div class="section level2">
 <h2 id="one-site-list-for-every-donor">One site list for every donor<a class="anchor" aria-label="anchor" href="#one-site-list-for-every-donor"></a>
 </h2>
-<p>Each donor has their own heterozygous sites, so counting each cell
-type against its own site list would produce objects whose rows cannot
-be compared. <code><a href="../reference/buildMasterSNPs.html">buildMasterSNPs()</a></code> reads every donor VCF once
-and returns the sorted union of biallelic heterozygous SNPs, carrying
-with each site the set of donors heterozygous there in a
-<code>donorMembership</code> column.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>Donors do not share heterozygous sites, so counting each cell type
+against its own list gives objects whose rows do not line up.
+<code><a href="../reference/buildMasterSNPs.html">buildMasterSNPs()</a></code> reads every donor VCF once and returns
+the sorted union of biallelic heterozygous SNPs, with a
+<code>donorMembership</code> column recording which donors are
+heterozygous at each site.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">masterGr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/buildMasterSNPs.html">buildMasterSNPs</a></span><span class="op">(</span>donors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">meta</span><span class="op">$</span><span class="va">donor</span><span class="op">)</span>, vcfDir <span class="op">=</span> <span class="va">vcfDir</span>, genome <span class="op">=</span> <span class="st">"hg38"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/saveRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">masterGr</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ascDir</span>, <span class="st">"masterSNPs.rds"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Built once and reused, this list keeps every per-cell-type object
-row-aligned, which is the precondition for later asking whether a site
-imbalanced in T cells is also imbalanced in B cells. The membership
-column matters just as much: it is what lets a sample be counted only
-where its own donor is heterozygous, and be marked missing everywhere
-else rather than silently treated as a balanced site.</p>
+<p>Build it once and reuse it. Row alignment is what makes it possible
+to ask later whether a site imbalanced in T cells is also imbalanced in
+B cells. The membership column lets each sample be counted only where
+its own donor is heterozygous and marked missing everywhere else.</p>
 </div>
 <div class="section level2">
 <h2 id="counting-alleles">Counting alleles<a class="anchor" aria-label="anchor" href="#counting-alleles"></a>
 </h2>
-<p><code><a href="../reference/DsASC.gatk.html">DsASC.gatk()</a></code> performs the pileup. Sites outside a
-sample’s donor het set receive <code>NA</code> rather than zero, so a
-homozygous genotype can never be mistaken for a covered site with no
-imbalance. Genuine zeros inside the donor’s het set are kept as zeros.
-Pileup stringency comes from the package configuration.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/DsASC.gatk.html">DsASC.gatk()</a></code> runs the pileup. Sites outside a sample’s
+donor het set get <code>NA</code> instead of zero. A zero there would
+look like a covered site with no imbalance, and every homozygous
+genotype would turn into a balanced call. Genuine zeros inside the het
+set stay zero. Pileup stringency comes from the package
+configuration.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/setConfigElement.html">setConfigElement</a></span><span class="op">(</span><span class="st">"minMapq"</span>, <span class="fl">20L</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/setConfigElement.html">setConfigElement</a></span><span class="op">(</span><span class="st">"minBaseq"</span>, <span class="fl">20L</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/setConfigElement.html">setConfigElement</a></span><span class="op">(</span><span class="st">"maxDepth"</span>, <span class="fl">5000L</span><span class="op">)</span></span>
@@ -341,28 +325,25 @@ Pileup stringency comes from the package configuration.</p>
 <span>  diskDump    <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  masterGr    <span class="op">=</span> <span class="va">masterGr</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>With <code>diskDump = TRUE</code> the two count matrices are written
-straight into HDF5 sinks, one sample column at a time, so memory stays
-flat regardless of how many million sites the master list holds. Realize
-them back into memory before serializing the object, otherwise the saved
-<code>.rds</code> points at an HDF5 file that will not travel with
-it.</p>
-<p>Because each cell type is independent given the shared master list,
-the counting stage parallelizes cleanly as a job array: one serial R
-process per cell type, all writing into the same directory.
-<code>src/01_asc_counting_ChrAccR.R</code> is written for exactly this,
-taking either <code>build_master</code> or a cell type name as its
-single argument.</p>
+<p><code>diskDump = TRUE</code> writes the two matrices into HDF5 sinks
+one sample column at a time, so memory stays flat however many million
+sites the master list holds. Realize them back into memory before saving
+the object, or the <code>.rds</code> ends up pointing at an HDF5 file
+that will not travel with it.</p>
+<p>Cell types are independent once the master list exists, so counting
+runs as a job array: one serial R process per cell type, all writing to
+the same directory. <code>src/01_asc_counting_ChrAccR.R</code> takes
+either <code>build_master</code> or a cell type name as its
+argument.</p>
 </div>
 <div class="section level2">
 <h2 id="restricting-to-open-chromatin">Restricting to open chromatin<a class="anchor" aria-label="anchor" href="#restricting-to-open-chromatin"></a>
 </h2>
 <p>A heterozygous site is only informative where there is chromatin
-signal for it to be allele-specific about. The peak set comes from the
-ordinary <code>ChrAccR</code> ATAC workflow, and the same object
-supplies the allele-agnostic accessibility matrix that is attached
-alongside the allele counts.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+signal. The peaks come from the ordinary <code>ChrAccR</code> ATAC
+workflow, and the same object supplies the allele-agnostic accessibility
+matrix.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dsAtac</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadDsAcc.html">loadDsAcc</a></span><span class="op">(</span><span class="va">atacDir</span><span class="op">)</span></span>
 <span><span class="va">peakGr</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCoord-DsAcc-method.html">getCoord</a></span><span class="op">(</span><span class="va">dsAtac</span>, <span class="st">"cons_peaks"</span><span class="op">)</span></span>
 <span><span class="va">peakMat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCounts-DsATAC-method.html">getCounts</a></span><span class="op">(</span><span class="va">dsAtac</span>, <span class="st">"cons_peaks"</span><span class="op">)</span></span>
@@ -374,28 +355,25 @@ alongside the allele counts.</p>
 <span><span class="va">dsAsc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/annotateASCSites.html">annotateASCSites</a></span><span class="op">(</span><span class="va">dsAsc</span>, <span class="va">peakGr</span><span class="op">)</span></span>
 <span><span class="va">dsAsc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterASCByPeaks.html">filterASCByPeaks</a></span><span class="op">(</span><span class="va">dsAsc</span><span class="op">)</span></span>
 <span><span class="va">dsAsc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setAccessibility.html">setAccessibility</a></span><span class="op">(</span><span class="va">dsAsc</span>, <span class="va">peakMat</span><span class="op">[</span>, <span class="fu"><a href="../reference/getSamples-DsAcc-method.html">getSamples</a></span><span class="op">(</span><span class="va">dsAsc</span><span class="op">)</span><span class="op">]</span>, <span class="va">peakGr</span><span class="op">)</span></span></code></pre></div>
-<p>Sex chromosomes go first because allelic balance is not defined
-there, and the coverage filter runs before peak annotation because it is
-the cheaper of the two and removes most of the rows.</p>
+<p>Sex chromosomes go first, since allelic balance is not defined there.
+The coverage filter runs before peak annotation because it is cheaper
+and removes most of the rows.</p>
 </div>
 <div class="section level2">
 <h2 id="the-example-dataset">The example dataset<a class="anchor" aria-label="anchor" href="#the-example-dataset"></a>
 </h2>
-<p>Everything from here on runs on four objects: a <code>DsASC</code>,
-the consensus peaks and accessibility matrix that go with it, and a
-table of per-site motif deltas. The packaged example holds all four, cut
-down from a full run to a handful of cell types from different lineages,
-resting and stimulated samples only, one chromosome and a few thousand
-covered sites. Thymic populations are excluded: they are the shallowest
-libraries in the dataset, several produce empty objects at the counting
-stage, and none of them survive coverage filtering in numbers that would
-demonstrate anything.</p>
-<p><code>inst/scripts/make_vignette_data.R</code> is what produces that
-file, and it reports the size of what it wrote so the example cannot
-quietly outgrow the package. Rerun it against your own
-<code>asc_counts</code> directory to regenerate the example, adjusting
-the cell types, chromosome and site count at the top of the script.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>Everything below needs four objects: a <code>DsASC</code>, the peaks
+and accessibility matrix that go with it, and a table of per-site motif
+deltas. The packaged example has all four, cut from a full run down to a
+few cell types from different lineages, resting and stimulated samples,
+one chromosome and a few thousand covered sites. Thymic populations are
+left out. They are the shallowest libraries in the dataset and mostly do
+not survive coverage filtering.</p>
+<p><code>inst/scripts/make_vignette_data.R</code> builds that file and
+prints its size, so the example cannot grow unnoticed. Point it at your
+own <code>asc_counts</code> directory to regenerate it, adjusting the
+cell types, chromosome and site count at the top of the script.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">example</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">examplePath</span><span class="op">)</span></span>
 <span><span class="va">dsDemo</span>    <span class="op">&lt;-</span> <span class="va">example</span><span class="op">$</span><span class="va">ds</span></span>
 <span><span class="va">peakGr</span>    <span class="op">&lt;-</span> <span class="va">example</span><span class="op">$</span><span class="va">peakGr</span></span>
@@ -408,109 +386,36 @@ the cell types, chromosome and site count at the top of the script.</p>
 &gt;  * 211 heterozygous SNP sites
 &gt;  * accessibility: not loaded
 &gt;  * allele assays: ref, alt</code></pre>
-<p>If the example has not been built, the block below stands in for it,
-with the same structure a real object has after counting: three donors,
-two cell types, two stimulation states, two libraries each, and 400
-heterozygous sites. Roughly one site in six is given a genuine allelic
-imbalance, a handful are made to look homozygous in one donor so the
-cleanup step has something to find, and the direction of each real
-imbalance is tied to a per-site motif effect that the
-transcription-factor section will recover.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">nSites</span>   <span class="op">&lt;-</span> <span class="fl">400L</span></span>
-<span><span class="va">donors</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"D1"</span>, <span class="st">"D2"</span>, <span class="st">"D3"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">sampleAnnot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">expand.grid</a></span><span class="op">(</span></span>
-<span>  replicate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, stimulus <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"U"</span>, <span class="st">"S"</span><span class="op">)</span>,</span>
-<span>  cellType  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Tcell"</span>, <span class="st">"Bcell"</span><span class="op">)</span>, donor <span class="op">=</span> <span class="va">donors</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">sampleAnnot</span><span class="op">$</span><span class="va">sampleId</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">sampleAnnot</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">donor</span>, <span class="va">cellType</span>, <span class="va">stimulus</span>, <span class="va">replicate</span>, sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">sampleAnnot</span> <span class="op">&lt;-</span> <span class="va">sampleAnnot</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sampleId"</span>, <span class="st">"donor"</span>, <span class="st">"cellType"</span>, <span class="st">"stimulus"</span>, <span class="st">"replicate"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">sampleAnnot</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">sampleAnnot</span><span class="op">$</span><span class="va">sampleId</span></span>
-<span><span class="va">nSamples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">sampleAnnot</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">pos</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1e6</span>, <span class="fl">5e6</span><span class="op">)</span>, <span class="va">nSites</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">refAll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>, <span class="va">nSites</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">altAll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">refAll</span>, <span class="kw">function</span><span class="op">(</span><span class="va">b</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/sets.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>, <span class="va">b</span><span class="op">)</span>, <span class="fl">1L</span><span class="op">)</span>, <span class="st">""</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">snpId</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"chr1:"</span>, <span class="va">pos</span>, <span class="st">"_"</span>, <span class="va">refAll</span>, <span class="st">"_"</span>, <span class="va">altAll</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">snpGr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a></span><span class="op">(</span><span class="st">"chr1"</span>, <span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/IRanges-constructor.html" class="external-link">IRanges</a></span><span class="op">(</span><span class="va">pos</span>, <span class="va">pos</span><span class="op">)</span>, REF <span class="op">=</span> <span class="va">refAll</span>, ALT <span class="op">=</span> <span class="va">altAll</span>, snpId <span class="op">=</span> <span class="va">snpId</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">snpGr</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">snpId</span></span>
-<span></span>
-<span><span class="va">siteDelta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">nSites</span>, <span class="fl">0</span>, <span class="fl">1.5</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">siteDelta</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">snpId</span></span>
-<span></span>
-<span><span class="va">isImbalanced</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="va">nSites</span><span class="op">)</span></span>
-<span><span class="va">isImbalanced</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">nSites</span>, <span class="fl">70L</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
-<span><span class="va">altFrac</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">isImbalanced</span>, <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.22</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign</a></span><span class="op">(</span><span class="va">siteDelta</span><span class="op">)</span>, <span class="fl">0.5</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">depth</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="va">nSites</span> <span class="op">*</span> <span class="va">nSamples</span>, lambda <span class="op">=</span> <span class="fl">25L</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">nSites</span>,</span>
-<span>                 dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">snpId</span>, <span class="va">sampleAnnot</span><span class="op">$</span><span class="va">sampleId</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">altMat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">nSites</span> <span class="op">*</span> <span class="va">nSamples</span>, size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">depth</span><span class="op">)</span>, prob <span class="op">=</span> <span class="va">altFrac</span><span class="op">)</span>,</span>
-<span>                 nrow <span class="op">=</span> <span class="va">nSites</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dimnames.html" class="external-link">dimnames</a></span><span class="op">(</span><span class="va">depth</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">refMat</span> <span class="op">&lt;-</span> <span class="va">depth</span> <span class="op">-</span> <span class="va">altMat</span></span>
-<span></span>
-<span><span class="va">leakSites</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">nSites</span>, <span class="fl">20L</span><span class="op">)</span></span>
-<span><span class="va">leakSamples</span> <span class="op">&lt;-</span> <span class="va">sampleAnnot</span><span class="op">$</span><span class="va">sampleId</span><span class="op">[</span><span class="va">sampleAnnot</span><span class="op">$</span><span class="va">donor</span> <span class="op">==</span> <span class="st">"D1"</span><span class="op">]</span></span>
-<span><span class="va">refMat</span><span class="op">[</span><span class="va">leakSites</span>, <span class="va">leakSamples</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">refMat</span><span class="op">[</span><span class="va">leakSites</span>, <span class="va">leakSamples</span><span class="op">]</span> <span class="op">+</span> <span class="va">altMat</span><span class="op">[</span><span class="va">leakSites</span>, <span class="va">leakSamples</span><span class="op">]</span></span>
-<span><span class="va">altMat</span><span class="op">[</span><span class="va">leakSites</span>, <span class="va">leakSamples</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
-<span></span>
-<span><span class="va">inPeak</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">nSites</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">0.8</span> <span class="op">*</span> <span class="va">nSites</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">peakGr</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a></span><span class="op">(</span><span class="st">"chr1"</span>, <span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/IRanges-constructor.html" class="external-link">IRanges</a></span><span class="op">(</span><span class="va">pos</span><span class="op">[</span><span class="va">inPeak</span><span class="op">]</span> <span class="op">-</span> <span class="fl">200L</span>, <span class="va">pos</span><span class="op">[</span><span class="va">inPeak</span><span class="op">]</span> <span class="op">+</span> <span class="fl">200L</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"peak_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">peakMat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span> <span class="op">*</span> <span class="va">nSamples</span>, lambda <span class="op">=</span> <span class="fl">40L</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span>,</span>
-<span>                  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span>, <span class="va">sampleAnnot</span><span class="op">$</span><span class="va">sampleId</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/DsASC.html">DsASC</a></span><span class="op">(</span><span class="va">sampleAnnot</span>, genome <span class="op">=</span> <span class="st">"hg38"</span><span class="op">)</span></span>
-<span><span class="va">dsDemo</span><span class="op">@</span><span class="va">coord</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>snps <span class="op">=</span> <span class="va">snpGr</span><span class="op">)</span></span>
-<span><span class="va">dsDemo</span><span class="op">@</span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ref <span class="op">=</span> <span class="va">refMat</span>, alt <span class="op">=</span> <span class="va">altMat</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">deltaDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/rbindlist.html" class="external-link">rbindlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>snpId <span class="op">=</span> <span class="va">snpId</span>, tf <span class="op">=</span> <span class="st">"JUNB"</span>,  delta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">siteDelta</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>snpId <span class="op">=</span> <span class="va">snpId</span>, tf <span class="op">=</span> <span class="st">"BACH1"</span>, delta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fl">0.5</span> <span class="op">*</span> <span class="va">siteDelta</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">nSites</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>snpId <span class="op">=</span> <span class="va">snpId</span>, tf <span class="op">=</span> <span class="st">"FOSL1"</span>, delta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">siteDelta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">dsDemo</span></span></code></pre></div>
-<p>That assembly is exactly what <code><a href="../reference/DsASC.gatk.html">DsASC.gatk()</a></code> does
-internally: an empty <code>DsASC</code> shell from the sample
-annotation, the master sites into <code>coord</code>, the two matrices
-into <code>counts</code>.</p>
-<p>Either way, the filtering chain applies from here on and the
-accessibility matrix is attached. On the packaged example the peak
-restriction is close to a no-op, because the counting stage already
-applied it; running it again costs nothing and keeps the two paths
-identical.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p>The filtering chain runs next. On the packaged example the peak
+restriction barely removes anything, since the counting step already
+applied it.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://epigenomeinformatics.github.io/ChrAccR/reference/filterChroms-DsASC-method.html">filterChroms</a></span><span class="op">(</span><span class="va">dsDemo</span>, remove <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chrX"</span>, <span class="st">"chrY"</span>, <span class="st">"chrM"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-03 19:13:09     5.2    INFO Kept 1 chromosomes. Removed 0 sites (0%)</code></pre>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<pre><code>&gt; 2026-09-03 19:39:27     5.2    INFO Kept 1 chromosomes. Removed 0 sites (0%)</code></pre>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterLowCovg-DsATAC-method.html">filterLowCovg</a></span><span class="op">(</span><span class="va">dsDemo</span>, thresh <span class="op">=</span> <span class="fl">5</span>, reqSamples <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-03 19:13:09     5.2  STATUS Removing sites with total coverage &lt; 5 in &gt; 33 samples
-&gt; 2026-09-03 19:13:09     5.2    INFO Removed 0 sites (0%)</code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<pre><code>&gt; 2026-09-03 19:39:27     5.2  STATUS Removing sites with total coverage &lt; 5 in &gt; 33 samples
+&gt; 2026-09-03 19:39:27     5.2    INFO Removed 0 sites (0%)</code></pre>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/annotateASCSites.html">annotateASCSites</a></span><span class="op">(</span><span class="va">dsDemo</span>, <span class="va">peakGr</span><span class="op">)</span></span>
 <span>  <span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterASCByPeaks.html">filterASCByPeaks</a></span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-03 19:13:09     5.2  STATUS STARTED Annotating SNPs with Consensus Peaks
-&gt; 2026-09-03 19:13:09     5.2    INFO     211 SNPs (100%) overlap with consensus peaks.
-&gt; 2026-09-03 19:13:09     5.2  STATUS COMPLETED Annotating SNPs with Consensus Peaks
+<pre><code>&gt; 2026-09-03 19:39:27     5.2  STATUS STARTED Annotating SNPs with Consensus Peaks
+&gt; 2026-09-03 19:39:27     5.2    INFO     211 SNPs (100%) overlap with consensus peaks.
+&gt; 2026-09-03 19:39:27     5.2  STATUS COMPLETED Annotating SNPs with Consensus Peaks
 &gt; 
-&gt; 2026-09-03 19:13:09     5.2  STATUS STARTED Filtering SNPs outside peaks
-&gt; 2026-09-03 19:13:09     5.2    INFO     Retained 211 SNPs inside peaks.
-&gt; 2026-09-03 19:13:09     5.2  STATUS COMPLETED Filtering SNPs outside peaks</code></pre>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+&gt; 2026-09-03 19:39:27     5.2  STATUS STARTED Filtering SNPs outside peaks
+&gt; 2026-09-03 19:39:27     5.2    INFO     Retained 211 SNPs inside peaks.
+&gt; 2026-09-03 19:39:27     5.2  STATUS COMPLETED Filtering SNPs outside peaks</code></pre>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">peakMat</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="../reference/getSamples-DsAcc-method.html">getSamples</a></span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">peakMat</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setAccessibility.html">setAccessibility</a></span><span class="op">(</span><span class="va">dsDemo</span>, <span class="va">peakMat</span>, <span class="va">peakGr</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-03 19:13:09     5.2  STATUS STARTED Attaching accessibility matrix to DsASC
-&gt; 2026-09-03 19:13:09     5.2    INFO     Stored 144 peaks x 34 samples.
-&gt; 2026-09-03 19:13:09     5.2  STATUS COMPLETED Attaching accessibility matrix to DsASC</code></pre>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<pre><code>&gt; 2026-09-03 19:39:27     5.2  STATUS STARTED Attaching accessibility matrix to DsASC
+&gt; 2026-09-03 19:39:27     5.2    INFO     Stored 144 peaks x 34 samples.
+&gt; 2026-09-03 19:39:27     5.2  STATUS COMPLETED Attaching accessibility matrix to DsASC</code></pre>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dsDemo</span></span></code></pre></div>
 <pre><code>&gt; DsASC allele-specific chromatin accessibility dataset
 &gt; contains:
@@ -519,14 +424,13 @@ identical.</p>
 &gt;  * 144 consensus peaks
 &gt;  * accessibility matrix: 144 peaks x 34 samples
 &gt;  * allele assays: ref, alt</code></pre>
-<p>The accessors return plain matrices, and
-<code>getAllelicBalance()</code> gives the alternative-allele fraction
-with a coverage floor applied, which is the quantity every plot in this
-vignette is ultimately built on.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<p>The accessors return plain matrices. <code>getAllelicBalance()</code>
+gives the alternative-allele fraction with a coverage floor applied, and
+every plot below comes back to it.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="fu">getRefCounts</span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt; [1] 211  34</code></pre>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">balance</span> <span class="op">&lt;-</span> <span class="fu">getAllelicBalance</span><span class="op">(</span><span class="va">dsDemo</span>, minCoverage <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">balance</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
@@ -535,44 +439,41 @@ vignette is ultimately built on.</p>
 <div class="section level2">
 <h2 id="cleaning-before-testing">Cleaning before testing<a class="anchor" aria-label="anchor" href="#cleaning-before-testing"></a>
 </h2>
-<p>Three corrections belong between counting and testing, and all three
-operate on the count matrices rather than on the object, because they
-change what a column means.</p>
-<p>Mis-genotyped sites come first. A site called heterozygous but
-actually homozygous produces a perfect, highly significant imbalance,
-and there will be many of them. <code><a href="../reference/ascDropHomozygous.html">ascDropHomozygous()</a></code> pools
-each donor’s samples and zeroes the sites where the pooled minor allele
-is either absent or present only at an error-level fraction, so they
-fall out of the coverage filter instead of topping the results
-table.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<p>Three corrections belong between counting and testing. All three work
+on the count matrices rather than on the object, since they change what
+a column means.</p>
+<p>Mis-genotyped sites first. A site called heterozygous but actually
+homozygous gives a clean, highly significant imbalance, and there will
+be plenty of them. <code><a href="../reference/ascDropHomozygous.html">ascDropHomozygous()</a></code> pools each donor’s
+samples and zeroes the sites where the pooled minor allele is absent or
+sits at an error-level fraction. They then drop out at the coverage
+filter instead of topping the results table.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">annotDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getSampleAnnot-DsAcc-method.html">getSampleAnnot</a></span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span></span>
 <span><span class="va">cleaned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ascDropHomozygous.html">ascDropHomozygous</a></span><span class="op">(</span><span class="fu">getRefCounts</span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span>, <span class="fu">getAltCounts</span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span>, <span class="va">annotDemo</span>,</span>
 <span>                             minMinor <span class="op">=</span> <span class="fl">2L</span>, minMinorFrac <span class="op">=</span> <span class="fl">0.05</span>, minTotal <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-03 19:13:10     5.2    INFO ascDropHomozygous: masked 4 donor x site loci (20 cells) as homozygous/mis-genotyped.</code></pre>
-<p>Region masking comes next. Repetitive and low-mappability regions are
-where WASP fails and where false heterozygous calls accumulate, and both
-push the result toward the reference allele.
-<code><a href="../reference/ascFilterRegions.html">ascFilterRegions()</a></code> takes the site identifiers and an ENCODE
-blacklist and returns the ones worth keeping.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<pre><code>&gt; 2026-09-03 19:39:27     5.2    INFO ascDropHomozygous: masked 4 donor x site loci (20 cells) as homozygous/mis-genotyped.</code></pre>
+<p>Then region masking. Repetitive and low-mappability regions are where
+WASP fails and where false heterozygous calls collect, and both push the
+result toward the reference allele. <code><a href="../reference/ascFilterRegions.html">ascFilterRegions()</a></code>
+takes the site identifiers and an ENCODE blacklist and returns the ones
+to keep.</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">keepIds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ascFilterRegions.html">ascFilterRegions</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">cleaned</span><span class="op">$</span><span class="va">ref</span><span class="op">)</span>, <span class="va">blacklistGr</span><span class="op">)</span></span>
 <span><span class="va">cleaned</span><span class="op">$</span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="va">cleaned</span><span class="op">$</span><span class="va">ref</span><span class="op">[</span><span class="va">keepIds</span>, <span class="op">]</span></span>
 <span><span class="va">cleaned</span><span class="op">$</span><span class="va">alt</span> <span class="op">&lt;-</span> <span class="va">cleaned</span><span class="op">$</span><span class="va">alt</span><span class="op">[</span><span class="va">keepIds</span>, <span class="op">]</span></span></code></pre></div>
-<p>Finally, the unit of analysis. A binomial test on a technical
-replicate uses half the reads and loses most of the power that the
-second half would have given it; the biological sample, not the library,
-is what should be tested. <code><a href="../reference/ascPoolReplicates.html">ascPoolReplicates()</a></code> sums
-libraries sharing a donor, cell type and condition and returns a
-matching annotation.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<p>Then the unit of analysis. Testing a technical replicate throws away
+half the reads and most of the power that comes with them.
+<code><a href="../reference/ascPoolReplicates.html">ascPoolReplicates()</a></code> sums libraries that share a donor, cell
+type and condition, and returns a matching annotation.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pooled</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ascPoolReplicates.html">ascPoolReplicates</a></span><span class="op">(</span><span class="va">cleaned</span><span class="op">$</span><span class="va">ref</span>, <span class="va">cleaned</span><span class="op">$</span><span class="va">alt</span>, <span class="va">annotDemo</span>,</span>
 <span>                            groupCols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cellType"</span>, <span class="st">"stimulus"</span>, <span class="st">"donor"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-03 19:13:10     5.2    INFO ascPoolReplicates: pooled 34 libraries into 17 biological samples (cellType x stimulus x donor).</code></pre>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<pre><code>&gt; 2026-09-03 19:39:28     5.2    INFO ascPoolReplicates: pooled 34 libraries into 17 biological samples (cellType x stimulus x donor).</code></pre>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">pooled</span><span class="op">$</span><span class="va">ref</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt; [1] 211  17</code></pre>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pooled</span><span class="op">$</span><span class="va">annot</span>, <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt;       sampleId cellType stimulus  donor
 &gt;         &lt;char&gt;   &lt;char&gt;   &lt;char&gt; &lt;char&gt;
@@ -583,21 +484,20 @@ matching annotation.</p>
 <div class="section level2">
 <h2 id="testing-for-allelic-imbalance">Testing for allelic imbalance<a class="anchor" aria-label="anchor" href="#testing-for-allelic-imbalance"></a>
 </h2>
-<p>Each site-sample pair with enough coverage is tested against a fixed
-null of 50:50 with a two-sided binomial test, and the p-values are
-corrected within each sample. The null stays at 0.5 deliberately: WASP
-is responsible for removing mapping bias, and re-centring the null on
-the observed allele fraction would calibrate it against the very signal
-being detected. The <code>minAllele</code> guard requires reads on both
-alleles, which removes the low-coverage calls whose only route to
-significance is a minor allele of exactly zero.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<p>Every site-sample pair with enough coverage gets a two-sided binomial
+test against 0.5, with p-values corrected within each sample. The null
+stays at 0.5. WASP handles mapping bias, and re-centring the null on the
+observed allele fraction would calibrate it against the signal being
+tested. <code>minAllele</code> requires reads on both alleles, which
+drops the low-coverage calls that only reach significance with a minor
+allele of exactly zero.</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ascStats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcASCStatistics.html">calcASCStatistics</a></span><span class="op">(</span><span class="va">dsDemo</span>, minCoverage <span class="op">=</span> <span class="fl">10</span>, minAllele <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-03 19:13:10     5.2  STATUS STARTED Calculating ASC Statistics (binomial test vs p = 0.5)
-&gt; 2026-09-03 19:13:10     5.2    INFO     Running two-sided binomial test against p = 0.5
-&gt; 2026-09-03 19:13:10     5.2    INFO     Tested 1747 site-sample observations; 47 significant at FDR &lt; 0.1.
-&gt; 2026-09-03 19:13:10     5.2  STATUS COMPLETED Calculating ASC Statistics (binomial test vs p = 0.5)</code></pre>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<pre><code>&gt; 2026-09-03 19:39:28     5.2  STATUS STARTED Calculating ASC Statistics (binomial test vs p = 0.5)
+&gt; 2026-09-03 19:39:28     5.2    INFO     Running two-sided binomial test against p = 0.5
+&gt; 2026-09-03 19:39:28     5.2    INFO     Tested 1747 site-sample observations; 47 significant at FDR &lt; 0.1.
+&gt; 2026-09-03 19:39:28     5.2  STATUS COMPLETED Calculating ASC Statistics (binomial test vs p = 0.5)</code></pre>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ascStats</span><span class="op">[</span>, <span class="va">donor</span> <span class="op">:=</span> <span class="va">annotDemo</span><span class="op">$</span><span class="va">donor</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">sampleId</span>, <span class="va">annotDemo</span><span class="op">$</span><span class="va">sampleId</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">ascStats</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">fdr</span><span class="op">)</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu">.</span><span class="op">(</span><span class="va">snpId</span>, <span class="va">sampleId</span>, <span class="va">donor</span>, <span class="va">ref</span>, <span class="va">alt</span>, <span class="va">total</span>, <span class="va">log2FC</span>, <span class="va">fdr</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code>&gt;                 snpId           sampleId  donor   ref   alt total    log2FC
@@ -614,12 +514,15 @@ significance is a minor allele of exactly zero.</p>
 &gt; 3: 1.468658e-03
 &gt; 4: 3.578356e-03
 &gt; 5: 7.793037e-03</code></pre>
-<p>The three standard views of that table are a per-site forest plot, a
-volcano and a genome-position view.</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<p>Three standard views of that table: a per-site forest plot, a
+volcano, and a genome-position plot. In the forest plot each point is
+one sample at one site, the bars are binomial confidence intervals, and
+faded points did not reach the FDR cutoff.</p>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topSites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">ascStats</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">fdr</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">snpId</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
 <span><span class="fu"><a href="../reference/plotASCBalance.html">plotASCBalance</a></span><span class="op">(</span><span class="va">dsDemo</span>, <span class="va">topSites</span>, colorBy <span class="op">=</span> <span class="st">"stimulus"</span>, orderBy <span class="op">=</span> <span class="st">"cellType"</span>,</span>
-<span>               sigStats <span class="op">=</span> <span class="va">ascStats</span>, sigCut <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+<span>               sigStats <span class="op">=</span> <span class="va">ascStats</span>, sigCut <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>S <span class="op">=</span> <span class="st">"#C0392B"</span>, U <span class="op">=</span> <span class="st">"#2C7FB8"</span><span class="op">)</span>, name <span class="op">=</span> <span class="st">"stimulus"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt; Warning:  [1m [22m`aes_string()` was deprecated in ggplot2 3.0.0.
 &gt;  [36mℹ [39m Please use tidy evaluation idioms with `aes()`.
 &gt;  [36mℹ [39m See also `vignette("ggplot2-in-packages")` for more information.
@@ -630,19 +533,18 @@ volcano and a genome-position view.</p>
 &gt;  [90mCall `lifecycle::last_lifecycle_warnings()` to see where this warning was [39m
 &gt;  [90mgenerated. [39m</code></pre>
 <p><img src="allelespec_files/figure-html/plots-1.png" class="r-plt" width="672"></p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotASCVolcano.html">plotASCVolcano</a></span><span class="op">(</span><span class="va">dsDemo</span>, stats <span class="op">=</span> <span class="va">ascStats</span>, sigCut <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="allelespec_files/figure-html/volcano-1.png" class="r-plt" width="672"></p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotASCManhattan.html">plotASCManhattan</a></span><span class="op">(</span><span class="va">dsDemo</span>, stats <span class="op">=</span> <span class="va">ascStats</span>, sigCut <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="allelespec_files/figure-html/manhattan-1.png" class="r-plt" width="672"></p>
-<p>Before reading anything into the site list, look at where the calls
-came from. A donor with much deeper libraries will contribute more
-significant sites simply because it has more power, and a donor with a
-bad genotype batch will contribute more because its false heterozygotes
-all look perfectly imbalanced. Neither is visible in a volcano, but both
-are obvious as soon as the calls are counted per donor.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<p>Check where the calls came from before reading anything into them. A
+donor with deeper libraries contributes more significant sites through
+power alone, and a donor with a bad genotype batch contributes more
+because its false heterozygotes all look perfectly imbalanced. Counting
+the calls per donor shows both.</p>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sigPerDonor</span> <span class="op">&lt;-</span> <span class="va">ascStats</span><span class="op">[</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span>, <span class="fu">.</span><span class="op">(</span>nSites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/duplicated.html" class="external-link">uniqueN</a></span><span class="op">(</span><span class="va">snpId</span><span class="op">)</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">donor</span><span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sigPerDonor</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html" class="external-link">reorder</a></span><span class="op">(</span><span class="va">donor</span>, <span class="op">-</span><span class="va">nSites</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">nSites</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -650,21 +552,19 @@ are obvious as soon as the calls are counted per donor.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Donor"</span>, y <span class="op">=</span> <span class="st">"Significant ASC sites (FDR &lt; 0.1)"</span>,</span>
 <span>       title <span class="op">=</span> <span class="st">"ASC calls contributed by each donor"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="allelespec_files/figure-html/donorbar-1.png" class="r-plt" width="672"></p>
-<p>A roughly even set of bars is what you want. One bar several times
-the height of the rest is a flag to go back to that donor’s coverage and
-genotype QC before trusting sites that only it supports.</p>
-<p>A single significant call in a single donor is weak evidence for the
-same reason. Recurrence across donors is the stronger claim, and
-<code><a href="../reference/filterForRecurrence.html">filterForRecurrence()</a></code> counts how many donors independently
-support each site. It expects a <code>donor</code> column, which was
-attached above, and a normalised effect-size column.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<p>Bars of roughly equal height are fine. One bar several times the rest
+means going back to that donor’s coverage and genotype QC before
+trusting sites only it supports.</p>
+<p>One significant call in one donor is weak evidence for the same
+reason. <code><a href="../reference/filterForRecurrence.html">filterForRecurrence()</a></code> counts how many donors
+independently support each site.</p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">recurrent</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterForRecurrence.html">filterForRecurrence</a></span><span class="op">(</span><span class="va">ascStats</span>, minDonors <span class="op">=</span> <span class="fl">2</span>, fdrCutoff <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-03 19:13:21     5.5  STATUS STARTED Identifying Recurrent ASC Sites
-&gt; 2026-09-03 19:13:21     5.5    INFO     Initial significant events: 47
-&gt; 2026-09-03 19:13:21     5.5    INFO     Recurrent events (N&gt;= 2 donors): 1
-&gt; 2026-09-03 19:13:21     5.5  STATUS COMPLETED Identifying Recurrent ASC Sites</code></pre>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<pre><code>&gt; 2026-09-03 19:39:31     5.5  STATUS STARTED Identifying Recurrent ASC Sites
+&gt; 2026-09-03 19:39:31     5.5    INFO     Initial significant events: 47
+&gt; 2026-09-03 19:39:31     5.5    INFO     Recurrent events (N&gt;= 2 donors): 1
+&gt; 2026-09-03 19:39:31     5.5  STATUS COMPLETED Identifying Recurrent ASC Sites</code></pre>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">recurrent</span>, <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt;                 snpId n_donors_sig mean_LFC
 &gt;                &lt;char&gt;        &lt;int&gt;    &lt;num&gt;
@@ -673,18 +573,17 @@ attached above, and a normalised effect-size column.</p>
 <div class="section level2">
 <h2 id="sharing-across-cell-types">Sharing across cell types<a class="anchor" aria-label="anchor" href="#sharing-across-cell-types"></a>
 </h2>
-<p>Because every cell type was counted against the same master list,
-per-cell-type objects can be read back and stacked into one aligned pair
-of matrices.</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<p>Every cell type was counted against the same master list, so the
+per-cell-type objects stack into one aligned pair of matrices.</p>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">merged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mergeDsASCArray.html">mergeDsASCArray</a></span><span class="op">(</span><span class="va">ascDir</span><span class="op">)</span></span></code></pre></div>
-<p>The sharing question is asymmetric: take the sites significant in
-cell type A, and ask what happens to them in cell type B. A site can be
-imbalanced in the same direction, balanced, or simply not accessible
-enough to say. <code><a href="../reference/ascSharing.html">ascSharing()</a></code> separates those three outcomes,
-using <code>ashr</code> to estimate the proportion with a genuinely
-non-zero effect in B rather than counting significance calls twice.</p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<p>The sharing question is asymmetric. Take the sites significant in
+cell type A and ask what they do in B: imbalanced in the same direction,
+balanced, or too shallow to say. <code><a href="../reference/ascSharing.html">ascSharing()</a></code> separates
+those three and uses <code>ashr</code> to estimate the proportion with a
+non-zero effect in B, which is more informative than counting
+significance calls twice.</p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cellsPresent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pooled</span><span class="op">$</span><span class="va">annot</span><span class="op">$</span><span class="va">cellType</span><span class="op">)</span></span>
 <span><span class="va">samplesA</span> <span class="op">&lt;-</span> <span class="va">pooled</span><span class="op">$</span><span class="va">annot</span><span class="op">[</span><span class="va">cellType</span> <span class="op">==</span> <span class="va">cellsPresent</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sampleId</span><span class="op">]</span></span>
 <span><span class="va">samplesB</span> <span class="op">&lt;-</span> <span class="va">pooled</span><span class="op">$</span><span class="va">annot</span><span class="op">[</span><span class="va">cellType</span> <span class="op">==</span> <span class="va">cellsPresent</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sampleId</span><span class="op">]</span></span>
@@ -696,26 +595,25 @@ non-zero effect in B rather than counting significance calls twice.</p>
 <span>                      fdrA <span class="op">=</span> <span class="fl">0.01</span>, minReadsB <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="va">sharing</span></span></code></pre></div>
 <p><code><a href="../reference/ascSitePosterior.html">ascSitePosterior()</a></code> gives the per-site posterior and FDR
-behind that estimate, <code><a href="../reference/ascStratum.html">ascStratum()</a></code> labels a pair of groups
-by whether they share lineage, condition, both or neither, and
+behind that estimate. <code><a href="../reference/ascStratum.html">ascStratum()</a></code> labels a pair of groups
+by whether they share lineage, condition, both or neither.
 <code><a href="../reference/estimateSharedImbalance.html">estimateSharedImbalance()</a></code> runs the same logic directly on
 two <code>DsASC</code> objects when the matrices have not been merged by
 hand.</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">shared</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimateSharedImbalance.html">estimateSharedImbalance</a></span><span class="op">(</span><span class="va">dsTcell</span>, <span class="va">dsBcell</span>, fdrCutoff <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
 <span><span class="va">shared</span><span class="op">$</span><span class="va">sharing_estimate</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="from-sites-to-motifs">From sites to motifs<a class="anchor" aria-label="anchor" href="#from-sites-to-motifs"></a>
 </h2>
-<p>The link between a variant and a transcription factor is the change
-in predicted binding it causes. For each site, a window the width of the
-widest motif is taken from the genome, the centre base is substituted to
-give reference and alternative versions, both are scored with every PWM,
-and the difference is recorded as
+<p>A variant links to a transcription factor through the change in
+predicted binding. For each site, take a window as wide as the widest
+motif, substitute the centre base to get the reference and the
+alternative version, score both with every PWM, and record
 <code>delta = score(ALT) - score(REF)</code>. A positive delta means the
 alternative allele is the predicted stronger binder.</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://jaspar.genereg.net/" class="external-link">JASPAR2020</a></span><span class="op">)</span>; <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ge11232002/TFBSTools" class="external-link">TFBSTools</a></span><span class="op">)</span>; <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">motifmatchr</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BSgenome.Hsapiens.UCSC.hg38</span><span class="op">)</span></span>
 <span></span>
@@ -738,17 +636,15 @@ alternative allele is the predicted stronger binder.</p>
 <span></span>
 <span><span class="va">deltaDt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/rbindlist.html" class="external-link">rbindlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">tfName</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>snpId <span class="op">=</span> <span class="va">sites</span><span class="op">$</span><span class="va">snpId</span>, tf <span class="op">=</span> <span class="va">tfName</span>, delta <span class="op">=</span> <span class="va">delta</span><span class="op">[</span>, <span class="va">tfName</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Scoring is restricted to the ASC-significant sites, which is what
-makes a genome-wide motif set tractable; scoring every site in every
-peak costs far more and adds nothing, since sites with no imbalance
-carry no allelic information.</p>
+<p>Only the ASC-significant sites are scored. That is what keeps a
+genome-wide motif set affordable, and sites with no imbalance carry no
+allelic information anyway.</p>
 <p><code>deltaDemo</code> already holds a table of this shape. In the
 packaged example it is the real output of the code above, computed once
 over the example sites by the data script. In the simulated fallback it
-is three synthetic profiles, one aligned with the injected imbalance,
-one partially aligned and one shuffled, so the section below has both a
-signal and a negative control.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+is three profiles: one aligned with the injected imbalance, one partly
+aligned, one shuffled.</p>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deltaDemo</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span>nSites <span class="op">=</span> <span class="va">.N</span>, meanAbsDelta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">tf</span><span class="op">]</span></span></code></pre></div>
 <pre><code>&gt;        tf nSites meanAbsDelta
 &gt;    &lt;char&gt;  &lt;int&gt;        &lt;num&gt;
@@ -761,13 +657,12 @@ signal and a negative control.</p>
 &gt; 7:   JUNB    211         1.27
 &gt; 8:   SPI1    211         1.61
 &gt; 9:   TCF7    211         0.83</code></pre>
-<p>Each site is then labelled by which allele the motif prefers. Sites
-whose delta clears the threshold in either direction are called for that
-allele; everything in between is “no preference” and acts as the
-internal control. The driver script uses a threshold of 1.0 on the PWM
-score; it is relaxed here because the example carries a few thousand
-sites rather than a genome’s worth.</p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<p>Each site is then labelled by the allele its motif prefers. Sites
+past the threshold in either direction are called for that allele, and
+everything in between is the internal control. The driver script uses
+1.0 on the PWM score; it is lower here because the example carries a few
+thousand sites rather than a genome’s worth.</p>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prefDelta</span> <span class="op">&lt;-</span> <span class="fl">0.5</span></span>
 <span></span>
 <span><span class="va">prefDt</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">deltaDemo</span><span class="op">)</span></span>
@@ -786,14 +681,14 @@ sites rather than a genome’s worth.</p>
 <div class="section level2">
 <h2 id="binding-preference-and-allelic-accessibility">Binding preference and allelic accessibility<a class="anchor" aria-label="anchor" href="#binding-preference-and-allelic-accessibility"></a>
 </h2>
-<p>This is the test that ties the two halves together. If a variant
-really disrupts a factor’s binding site, the allele the motif prefers
-should be the more accessible one, and the effect should be larger when
-the factor is active. Pooling reads by condition and plotting the
-reference-allele fraction against the predicted preference asks exactly
-that, with the “no preference” sites sitting at 0.5 to show the axis is
-not simply skewed.</p>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<p>This is where the two halves meet. If a variant really disrupts a
+binding site, the allele the motif prefers should be the more accessible
+one, and the effect should be stronger when the factor is active.
+Pooling reads by condition and plotting the reference-allele fraction
+against the predicted preference tests that directly, with the
+no-preference sites at 0.5 as a check that the axis is not simply
+skewed.</p>
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">condFrac</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">cond</span>, <span class="va">label</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">sids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">pooled</span><span class="op">$</span><span class="va">annot</span><span class="op">[</span><span class="va">stimulus</span> <span class="op">==</span> <span class="va">cond</span>, <span class="va">sampleId</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">pooled</span><span class="op">$</span><span class="va">ref</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">pooled</span><span class="op">$</span><span class="va">ref</span><span class="op">[</span>, <span class="va">sids</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span>
@@ -809,7 +704,7 @@ not simply skewed.</p>
 <span><span class="va">plotDt</span><span class="op">[</span>, <span class="va">preference</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">preference</span>,</span>
 <span>        levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alternative"</span>, <span class="st">"No preference"</span>, <span class="st">"Reference"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">plotDt</span><span class="op">[</span>, <span class="va">condition</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">condition</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Resting"</span>, <span class="st">"Stimulated"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">plotDt</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">condition</span>, y <span class="op">=</span> <span class="va">refFrac</span>, fill <span class="op">=</span> <span class="va">preference</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dotted"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span>outlier.size <span class="op">=</span> <span class="fl">0.3</span>, position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -822,12 +717,11 @@ not simply skewed.</p>
 <span>       title <span class="op">=</span> <span class="st">"Predicted binding preference vs allelic accessibility"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="allelespec_files/figure-html/tfboxplot-1.png" class="r-plt" width="672"></p>
-<p>The prediction is a separation between the two coloured boxes: sites
+<p>What to look for is separation between the two coloured boxes. Sites
 where the motif prefers the reference allele should sit above 0.5, sites
-where it prefers the alternative below it. A Mann-Whitney test on those
-two groups puts a number on the gap, computed per factor and per
-condition.</p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+where it prefers the alternative below it. A Mann-Whitney test per
+factor and condition puts a number on the gap.</p>
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plotDt</span><span class="op">[</span><span class="va">preference</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reference"</span>, <span class="st">"Alternative"</span><span class="op">)</span>,</span>
 <span>       <span class="fu">.</span><span class="op">(</span>p <span class="op">=</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/wilcox.test.html" class="external-link">wilcox.test</a></span><span class="op">(</span><span class="va">refFrac</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels</a></span><span class="op">(</span><span class="va">preference</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">p.value</span>,</span>
 <span>                      error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="cn">NA_real_</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -852,29 +746,28 @@ condition.</p>
 &gt; 16:   CTCF    Resting 0.498575427
 &gt; 17:  NFKB1 Stimulated 0.651486373
 &gt; 18:  NFKB1    Resting 0.752118400</code></pre>
-<p><code><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels()</a></code> matters here: <code>preference</code> is a
-three-level factor, and a formula-interface <code>wilcox.test</code>
-refuses a grouping factor that still carries an unused third level, so
-without it every p-value comes back as <code>NA</code> through the
+<p><code><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels()</a></code> matters here. <code>preference</code> has
+three levels, and the formula interface of <code>wilcox.test</code>
+rejects a grouping factor that still carries an unused level, so without
+it every p-value comes back as <code>NA</code> through the
 <code>tryCatch</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="cross-referencing-published-calls">Cross-referencing published calls<a class="anchor" aria-label="anchor" href="#cross-referencing-published-calls"></a>
 </h2>
-<p>The pipeline can be checked against the allele-specific variants
-reported in Calderon et al., <em>Nature Genetics</em> 2019 (<a href="doi:10.1038/s41588-019-0505-9" class="uri">doi:10.1038/s41588-019-0505-9</a>), whose supplementary
+<p>The calls can be checked against the allele-specific variants in
+Calderon et al., <em>Nature Genetics</em> 2019 (<a href="doi:10.1038/s41588-019-0505-9" class="uri">doi:10.1038/s41588-019-0505-9</a>). Their supplementary
 table lists genotypes, WASP-corrected counts and allele fractions for
-GWAS-overlapping ASC sites. Lifting those coordinates to the working
-assembly and matching per donor and site answers three questions at
-once: whether the direction of imbalance is reproduced, whether the
-reference fraction at matched sites is skewed relative to theirs, and
-whether the significant set as a whole sits at a comparable allele
-fraction.</p>
+the GWAS-overlapping ASC sites. Lifting those coordinates to the working
+assembly and matching per donor and site answers three questions:
+whether the direction of imbalance is reproduced, whether the reference
+fraction at matched sites is skewed relative to theirs, and whether the
+significant set sits at a comparable allele fraction overall.</p>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt; Warning in system("timedatectl", intern = TRUE): running command 'timedatectl'
 &gt; had status 1</code></pre>
