@@ -34,7 +34,7 @@ Create a report summarizing exploratory analyses of an accessibility dataset
 \examples{
 \dontrun{
 dsa <- ChrAccRex::loadExample("dsAtac_ia_example")
-dsa_qnorm <- transformCounts(dsa, method="quantile")
+dsa_qnorm <- transformCounts(dsa, method = "quantile")
 setConfigElement("annotationColumns", c("cellType", "donor", "stimulus"))
 setConfigElement("regionTypes", setdiff(getRegionTypes(dsa), c("promoters_gc_protein_coding", "t10k")))
 reportDir <- file.path(".", "ChrAccR_reports")

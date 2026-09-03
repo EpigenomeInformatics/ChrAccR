@@ -11,10 +11,10 @@ A class for storing NOMe accessibility data
 
 \describe{
   \item{\code{meth}}{
-	List of GC methylation for sites and summarized regions.
+		List of GC methylation for sites and summarized regions.
   }
   \item{\code{covg}}{
-	List of GC read coverage for sites and summarized regions.
+		List of GC read coverage for sites and summarized regions.
   }
 }
 }

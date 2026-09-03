@@ -25,3 +25,12 @@ devtools::install_github("EpigenomeInformatics/ChrAccR", dependencies=TRUE)
 ## Getting started
 
 The `ChrAccR` [vignette](https://epigenomeinformatics.github.io/ChrAccR/articles/overview.html) provides a most excellent starting point to get familiar with the package.
+
+## How to cite
+
+If you use `ChrAccR` in your work, please cite it. The current entry is always
+available from R itself:
+
+```r
+print(citation("ChrAccR"), bibtex = TRUE)
+```
