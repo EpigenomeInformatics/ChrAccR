@@ -32,11 +32,5 @@ If you use `ChrAccR` in your work, please cite it. The current entry is always
 available from R itself:
 
 ```r
-citation("ChrAccR")
-```
-
-For the BibTeX version:
-
-```r
-toBibtex(citation("ChrAccR"))
+print(citation("ChrAccR"), bibtex = TRUE)
 ```
