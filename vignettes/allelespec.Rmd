@@ -23,7 +23,6 @@ knitr::opts_chunk$set(
   fig.width = 7,
   fig.height = 4.5
 )
-examplePath <- system.file("extdata", "dsASC_example.rds", package = "ChrAccR")
 ```
 
 # Introduction
@@ -32,7 +31,7 @@ Both alleles of a heterozygous site sit in the same nucleus, see the same transc
 
 `AlleleSpeC` is the ASC layer of `ChrAccR`. It takes WASP-corrected BAM files and donor genotypes, counts reference and alternative reads at heterozygous sites inside consensus peaks, tests each site for imbalance, and checks whether the imbalance follows the allele a transcription factor is predicted to bind. `DsASC` holds the data. It is a `DsAcc` subclass with two aligned count matrices (`ref` and `alt`, sites x samples) and the allele-agnostic peak matrix in the same object.
 
-This vignette covers the pipeline end to end. The stages that need a cluster are shown but not run. Everything after counting runs on a small example object in `inst/extdata`, built by `inst/scripts/make_vignette_data.R`.
+This vignette covers the pipeline end to end. The stages that need a cluster are shown but not run. Everything after counting runs on a small example dataset from the `ChrAccRex` data package.
 
 # The shape of the pipeline
 
@@ -149,10 +148,13 @@ Sex chromosomes go first, since allelic balance is not defined there. The covera
 
 Everything below needs four objects: a `DsASC`, the peaks and accessibility matrix that go with it, and a table of per-site motif deltas. The packaged example has all four, cut from a full run down to a few cell types from different lineages, resting and stimulated samples, one chromosome and a few thousand covered sites. Thymic populations are left out. They are the shallowest libraries in the dataset and mostly do not survive coverage filtering.
 
-`inst/scripts/make_vignette_data.R` builds that file and prints its size, so the example cannot grow unnoticed. Point it at your own `asc_counts` directory to regenerate it, adjusting the cell types, chromosome and site count at the top of the script.
+It is provided in the `ChrAccRex` package and built by its `inst/scripts/make_dsAsc_example.R`. If you haven't already installed `ChrAccRex` use
+```{r, eval = FALSE}
+devtools::install_github("EpigenomeInformatics/ChrAccRex")
+```
 
 ```{r example-load}
-example   <- readRDS(examplePath)
+example   <- ChrAccRex::loadExample("dsAsc_ia_example")
 dsDemo    <- example$ds
 peakGr    <- example$peakGr
 peakMat   <- example$peakMat
@@ -321,7 +323,7 @@ deltaDt <- rbindlist(lapply(colnames(delta), function(tfName)
 
 Only the ASC-significant sites are scored. That is what keeps a genome-wide motif set affordable, and sites with no imbalance carry no allelic information anyway.
 
-`deltaDemo` already holds a table of this shape. In the packaged example it is the real output of the code above, computed once over the example sites by the data script. In the simulated fallback it is three profiles: one aligned with the injected imbalance, one partly aligned, one shuffled.
+`deltaDemo` already holds a table of this shape. In the packaged example it is the real output of the code above, computed once over the example sites.
 
 ```{r deltaShow}
 deltaDemo[, .(nSites = .N, meanAbsDelta = round(mean(abs(delta)), 2)), by = tf]

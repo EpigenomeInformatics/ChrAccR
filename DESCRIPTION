@@ -9,6 +9,12 @@ Authors@R: c(
 Date: 2026-09-03
 URL: https://epigenomeinformatics.github.io/ChrAccR, https://github.com/EpigenomeInformatics/ChrAccR
 BugReports: https://github.com/EpigenomeInformatics/ChrAccR/issues
+Remotes:
+    EpigenomeInformatics/ChrAccRex,
+    demuellae/muLogR,
+    demuellae/muRtools,
+    demuellae/muReportR,
+    GreenleafLab/chromVARmotifs
 Suggests:
     ChrAccRex,
     muReportR,

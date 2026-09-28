@@ -22,7 +22,7 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Irem B. Gündüz \email{irembgunduz@gmail.com} (\href{https://orcid.org/0000-0003-2641-0916}{ORCID})
+  \item Irem B. G<U+00FC>nd<U+00FC>z \email{irembgunduz@gmail.com} (\href{https://orcid.org/0000-0003-2641-0916}{ORCID})
 }
 
 }

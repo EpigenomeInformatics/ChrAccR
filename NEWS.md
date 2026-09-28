@@ -15,8 +15,8 @@
   `ascSharing()` and `estimateSharedImbalance()`.
 * Plotting: `plotASCBalance()`, `plotASCVolcano()` and `plotASCManhattan()`.
 * `prepareMotifmatchr()` now supports JASPAR2020 (`motifs = "jaspar2020"`).
-* New vignette, "Allele-specific chromatin accessibility", with a small example
-  dataset in `inst/extdata` built by `inst/scripts/make_vignette_data.R`.
+* New vignette, "Allele-specific chromatin accessibility", using the
+  `dsAsc_ia_example` dataset from `ChrAccRex`.
 
 ## Bug fixes
 
