@@ -350,7 +350,7 @@ matrix.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"peak_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">peakMat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">dsAsc</span> <span class="op">&lt;-</span> <span class="fu">filterChroms</span><span class="op">(</span><span class="va">dsAsc</span>, remove <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chrX"</span>, <span class="st">"chrY"</span>, <span class="st">"chrM"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">dsAsc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://epigenomeinformatics.github.io/ChrAccR/reference/filterChroms-DsASC-method.html">filterChroms</a></span><span class="op">(</span><span class="va">dsAsc</span>, remove <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chrX"</span>, <span class="st">"chrY"</span>, <span class="st">"chrM"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">dsAsc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterLowCovg-DsATAC-method.html">filterLowCovg</a></span><span class="op">(</span><span class="va">dsAsc</span>, thresh <span class="op">=</span> <span class="fl">5</span>, reqSamples <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">dsAsc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/annotateASCSites.html">annotateASCSites</a></span><span class="op">(</span><span class="va">dsAsc</span>, <span class="va">peakGr</span><span class="op">)</span></span>
 <span><span class="va">dsAsc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterASCByPeaks.html">filterASCByPeaks</a></span><span class="op">(</span><span class="va">dsAsc</span><span class="op">)</span></span>
@@ -391,31 +391,31 @@ installed <code>ChrAccRex</code> use</p>
 restriction barely removes anything, since the counting step already
 applied it.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu">filterChroms</span><span class="op">(</span><span class="va">dsDemo</span>, remove <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chrX"</span>, <span class="st">"chrY"</span>, <span class="st">"chrM"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-28 22:53:27     2.0    INFO Kept 1 chromosomes. Removed 0 sites (0%)</code></pre>
+<code class="sourceCode R"><span><span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://epigenomeinformatics.github.io/ChrAccR/reference/filterChroms-DsASC-method.html">filterChroms</a></span><span class="op">(</span><span class="va">dsDemo</span>, remove <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chrX"</span>, <span class="st">"chrY"</span>, <span class="st">"chrM"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>&gt; 2026-09-28 23:02:45     2.0    INFO Kept 1 chromosomes. Removed 0 sites (0%)</code></pre>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterLowCovg-DsATAC-method.html">filterLowCovg</a></span><span class="op">(</span><span class="va">dsDemo</span>, thresh <span class="op">=</span> <span class="fl">5</span>, reqSamples <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-28 22:53:27     2.0  STATUS Removing sites with total coverage &lt; 5 in &gt; 33 samples
-&gt; 2026-09-28 22:53:27     2.0    INFO Removed 0 sites (0%)</code></pre>
+<pre><code>&gt; 2026-09-28 23:02:45     2.0  STATUS Removing sites with total coverage &lt; 5 in &gt; 33 samples
+&gt; 2026-09-28 23:02:45     2.0    INFO Removed 0 sites (0%)</code></pre>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">peakGr</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/annotateASCSites.html">annotateASCSites</a></span><span class="op">(</span><span class="va">dsDemo</span>, <span class="va">peakGr</span><span class="op">)</span></span>
 <span>  <span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterASCByPeaks.html">filterASCByPeaks</a></span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-28 22:53:27     2.0  STATUS STARTED Annotating SNPs with Consensus Peaks
-&gt; 2026-09-28 22:53:27     2.0    INFO     211 SNPs (100%) overlap with consensus peaks.
-&gt; 2026-09-28 22:53:27     2.0  STATUS COMPLETED Annotating SNPs with Consensus Peaks
+<pre><code>&gt; 2026-09-28 23:02:45     2.0  STATUS STARTED Annotating SNPs with Consensus Peaks
+&gt; 2026-09-28 23:02:45     2.0    INFO     211 SNPs (100%) overlap with consensus peaks.
+&gt; 2026-09-28 23:02:45     2.0  STATUS COMPLETED Annotating SNPs with Consensus Peaks
 &gt; 
-&gt; 2026-09-28 22:53:27     2.0  STATUS STARTED Filtering SNPs outside peaks
-&gt; 2026-09-28 22:53:27     2.0    INFO     Retained 211 SNPs inside peaks.
-&gt; 2026-09-28 22:53:27     2.0  STATUS COMPLETED Filtering SNPs outside peaks</code></pre>
+&gt; 2026-09-28 23:02:45     2.0  STATUS STARTED Filtering SNPs outside peaks
+&gt; 2026-09-28 23:02:45     2.0    INFO     Retained 211 SNPs inside peaks.
+&gt; 2026-09-28 23:02:45     2.0  STATUS COMPLETED Filtering SNPs outside peaks</code></pre>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">peakMat</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="../reference/getSamples-DsAcc-method.html">getSamples</a></span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">peakMat</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dsDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setAccessibility.html">setAccessibility</a></span><span class="op">(</span><span class="va">dsDemo</span>, <span class="va">peakMat</span>, <span class="va">peakGr</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-28 22:53:27     2.0  STATUS STARTED Attaching accessibility matrix to DsASC
-&gt; 2026-09-28 22:53:27     2.0    INFO     Stored 144 peaks x 34 samples.
-&gt; 2026-09-28 22:53:27     2.0  STATUS COMPLETED Attaching accessibility matrix to DsASC</code></pre>
+<pre><code>&gt; 2026-09-28 23:02:45     2.0  STATUS STARTED Attaching accessibility matrix to DsASC
+&gt; 2026-09-28 23:02:45     2.0    INFO     Stored 144 peaks x 34 samples.
+&gt; 2026-09-28 23:02:45     2.0  STATUS COMPLETED Attaching accessibility matrix to DsASC</code></pre>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dsDemo</span></span></code></pre></div>
 <pre><code>&gt; DsASC allele-specific chromatin accessibility dataset
@@ -453,7 +453,7 @@ filter instead of topping the results table.</p>
 <code class="sourceCode R"><span><span class="va">annotDemo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getSampleAnnot-DsAcc-method.html">getSampleAnnot</a></span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span></span>
 <span><span class="va">cleaned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ascDropHomozygous.html">ascDropHomozygous</a></span><span class="op">(</span><span class="fu">getRefCounts</span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span>, <span class="fu">getAltCounts</span><span class="op">(</span><span class="va">dsDemo</span><span class="op">)</span>, <span class="va">annotDemo</span>,</span>
 <span>                             minMinor <span class="op">=</span> <span class="fl">2L</span>, minMinorFrac <span class="op">=</span> <span class="fl">0.05</span>, minTotal <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-28 22:53:27     2.0    INFO ascDropHomozygous: masked 4 donor x site loci (20 cells) as homozygous/mis-genotyped.</code></pre>
+<pre><code>&gt; 2026-09-28 23:02:45     2.0    INFO ascDropHomozygous: masked 4 donor x site loci (20 cells) as homozygous/mis-genotyped.</code></pre>
 <p>Then region masking. Repetitive and low-mappability regions are where
 WASP fails and where false heterozygous calls collect, and both push the
 result toward the reference allele. <code><a href="../reference/ascFilterRegions.html">ascFilterRegions()</a></code>
@@ -470,7 +470,7 @@ type and condition, and returns a matching annotation.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pooled</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ascPoolReplicates.html">ascPoolReplicates</a></span><span class="op">(</span><span class="va">cleaned</span><span class="op">$</span><span class="va">ref</span>, <span class="va">cleaned</span><span class="op">$</span><span class="va">alt</span>, <span class="va">annotDemo</span>,</span>
 <span>                            groupCols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cellType"</span>, <span class="st">"stimulus"</span>, <span class="st">"donor"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-28 22:53:27     2.0    INFO ascPoolReplicates: pooled 34 libraries into 17 biological samples (cellType x stimulus x donor).</code></pre>
+<pre><code>&gt; 2026-09-28 23:02:45     2.0    INFO ascPoolReplicates: pooled 34 libraries into 17 biological samples (cellType x stimulus x donor).</code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">pooled</span><span class="op">$</span><span class="va">ref</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt; [1] 211  17</code></pre>
@@ -494,10 +494,10 @@ drops the low-coverage calls that only reach significance with a minor
 allele of exactly zero.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ascStats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcASCStatistics.html">calcASCStatistics</a></span><span class="op">(</span><span class="va">dsDemo</span>, minCoverage <span class="op">=</span> <span class="fl">10</span>, minAllele <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-28 22:53:27     2.0  STATUS STARTED Calculating ASC Statistics (binomial test vs p = 0.5)
-&gt; 2026-09-28 22:53:27     2.0    INFO     Running two-sided binomial test against p = 0.5
-&gt; 2026-09-28 22:53:27     2.0    INFO     Tested 1747 site-sample observations; 47 significant at FDR &lt; 0.1.
-&gt; 2026-09-28 22:53:27     2.0  STATUS COMPLETED Calculating ASC Statistics (binomial test vs p = 0.5)</code></pre>
+<pre><code>&gt; 2026-09-28 23:02:45     2.0  STATUS STARTED Calculating ASC Statistics (binomial test vs p = 0.5)
+&gt; 2026-09-28 23:02:45     2.0    INFO     Running two-sided binomial test against p = 0.5
+&gt; 2026-09-28 23:02:45     2.0    INFO     Tested 1747 site-sample observations; 47 significant at FDR &lt; 0.1.
+&gt; 2026-09-28 23:02:45     2.0  STATUS COMPLETED Calculating ASC Statistics (binomial test vs p = 0.5)</code></pre>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ascStats</span><span class="op">[</span>, <span class="va">donor</span> <span class="op">:=</span> <span class="va">annotDemo</span><span class="op">$</span><span class="va">donor</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">sampleId</span>, <span class="va">annotDemo</span><span class="op">$</span><span class="va">sampleId</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">ascStats</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">fdr</span><span class="op">)</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu">.</span><span class="op">(</span><span class="va">snpId</span>, <span class="va">sampleId</span>, <span class="va">donor</span>, <span class="va">ref</span>, <span class="va">alt</span>, <span class="va">total</span>, <span class="va">log2FC</span>, <span class="va">fdr</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
@@ -552,10 +552,10 @@ reason. <code><a href="../reference/filterForRecurrence.html">filterForRecurrenc
 independently support each site.</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">recurrent</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filterForRecurrence.html">filterForRecurrence</a></span><span class="op">(</span><span class="va">ascStats</span>, minDonors <span class="op">=</span> <span class="fl">2</span>, fdrCutoff <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&gt; 2026-09-28 22:53:29     2.1  STATUS STARTED Identifying Recurrent ASC Sites
-&gt; 2026-09-28 22:53:29     2.1    INFO     Initial significant events: 47
-&gt; 2026-09-28 22:53:29     2.1    INFO     Recurrent events (N&gt;= 2 donors): 1
-&gt; 2026-09-28 22:53:29     2.1  STATUS COMPLETED Identifying Recurrent ASC Sites</code></pre>
+<pre><code>&gt; 2026-09-28 23:02:46     2.1  STATUS STARTED Identifying Recurrent ASC Sites
+&gt; 2026-09-28 23:02:46     2.1    INFO     Initial significant events: 47
+&gt; 2026-09-28 23:02:46     2.1    INFO     Recurrent events (N&gt;= 2 donors): 1
+&gt; 2026-09-28 23:02:46     2.1  STATUS COMPLETED Identifying Recurrent ASC Sites</code></pre>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">recurrent</span>, <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 <pre><code>&gt;                 snpId n_donors_sig mean_LFC
