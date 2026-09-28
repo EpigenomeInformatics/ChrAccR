@@ -1,12 +1,12 @@
-pandoc: 3.8.3
-pkgdown: 2.2.0
+pandoc: 3.6.4
+pkgdown: 2.1.2
 pkgdown_sha: ~
 articles:
   allelespec: allelespec.html
   overview: overview.html
   articles/resource: resource.html
   singlecell: singlecell.html
-last_built: 2026-09-03T17:37Z
+last_built: 2026-09-28T20:52Z
 urls:
   reference: https://epigenomeinformatics.github.io/ChrAccR/reference
   article: https://epigenomeinformatics.github.io/ChrAccR/articles
