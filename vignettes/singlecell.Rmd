@@ -134,7 +134,7 @@ ggplot(df, aes(x=UMAP1, y=UMAP2, color=sampleSource)) + geom_point(size=0.25)
 We utilize `chromVAR` in order to determine the genome-wide TF motif activity for each cell [@Schep:2017je]. You can use the low-dimensional projection in order to visualize variability in TF motif accessibility across all cells in the manifold.
 
 ```{r, message = FALSE, warning = FALSE}
-cvRes <- getChromVarDev(dsa, ".peaks.itlsi", motifs="jaspar")
+cvRes <- getChromVarDev(dsa, ".peaks.itlsi", motifs="jaspar2018")
 devZ <- t(chromVAR::deviations(cvRes))
 
 motifNames <- c("MA0036.3_GATA2", "MA0652.1_IRF8", "MA0102.3_CEBPA", "MA0690.1_TBX21")

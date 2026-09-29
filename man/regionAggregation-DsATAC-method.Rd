@@ -25,7 +25,7 @@
 
 \item{signal}{character string specifying a name for the region type for the signal to be aggregated
 If it is \code{NULL} (default), the new region type will be initialized with NA values.
-If it is \code{"insertions"} count data will be initialized from insertion sites (if 
+If it is \code{"insertions"} count data will be initialized from insertion sites (if
 fragment data is present in the object).}
 
 \item{aggrFun}{aggregation function for signal counts. Will only be used if \code{signal!="insertions"}

@@ -14,9 +14,9 @@
 \item{objectB}{\code{\linkS4class{DsATAC}} object}
 
 \item{combineRegionTypes}{how to combine region types:
- 'union' (default): the resulting object will have counts aggregated over region types
- from both objects. 'intersect': only region types present in both objects will occur
-in the output}
+'union' (default): the resulting object will have counts aggregated over region types
+from both objects. 'intersect': only region types present in both objects will occur
+   in the output}
 }
 \value{
 a new \code{\linkS4class{DsATAC}} object combining both input objects.

@@ -1,0 +1,19 @@
+citHeader("To cite ChrAccR in publications, please use:")
+
+year <- if (!is.null(meta$Date)) sub("-.*", "", meta$Date) else format(Sys.Date(), "%Y")
+vers <- paste("R package version", meta$Version)
+
+bibentry(
+  bibtype  = "Manual",
+  title    = "ChrAccR: Analyzing chromatin accessibility data in R",
+  author   = c(person("Fabian", "Mueller"),
+               person("Irem B.", "Gunduz")),
+  year     = year,
+  note     = vers,
+  url      = "https://github.com/EpigenomeInformatics/ChrAccR",
+  textVersion = paste0(
+    "Mueller F, Gunduz IB (", year, "). ",
+    "ChrAccR: Analyzing chromatin accessibility data in R. ",
+    vers, ". https://github.com/EpigenomeInformatics/ChrAccR"
+  )
+)

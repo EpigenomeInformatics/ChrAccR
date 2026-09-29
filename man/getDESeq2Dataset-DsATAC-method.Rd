@@ -28,7 +28,7 @@ Retrieve a differential expression dataset computed with DESeq2
 \examples{
 \dontrun{
 dsa <- ChrAccRex::loadExample("dsAtac_ia_example")
-dds <- getDESeq2Dataset(dsa, "IA_prog_peaks", designCols=c("donor", "stimulus", "cellType"))
+dds <- getDESeq2Dataset(dsa, "IA_prog_peaks", designCols = c("donor", "stimulus", "cellType"))
 dds
 }
 }

@@ -15,36 +15,36 @@
 ### @details
 ### Analogous to \code{RnBeads}' \code{computeDiffMeth.bin.region} function
 ### @return list of differential methylation tables
-computeDiffAcc.rnb.nome.bin.region <- function(dsn, dmtp, inds.g1, inds.g2, regionTypes=getRegionTypes(dsn), ...){
-	#sanity checks
-	if (length(union(inds.g1,inds.g2)) != (length(inds.g1)+length(inds.g2))){
-		logger.error("Overlapping sample sets in differential methylation analysis")
-	}
-	logger.start('Computing Differential Methylation Tables (Region Level)')
-	skipSites <- FALSE
-	if (is.null(dmtp)){
-		logger.info("Computing differential methylation for regions directly (NOT using site-specific differential methylation)")
-		skipSites <- TRUE
-	}
-	diffTabs <- list()
-	for (rt in regionTypes){
-		if (skipSites){
-			covMat <- getCovg(dsn, rt, asMatrix=TRUE)
-			dmtr <- RnBeads:::computeDiffMeth.bin.site(getMeth(dsn,rt, asMatrix=TRUE), inds.g1, inds.g2, covg=covMat, ...)
-		} else {
-			inclCov <- !is.null(getCovg(dsn, "sites", asMatrix=TRUE))
-			regions2sites <- getRegionMapping(dsn, rt)
-			dmtr <- RnBeads:::computeDiffTab.default.region(dmtp, regions2sites, includeCovg=inclCov)
-			dmtr4ranks <- RnBeads:::extractRankingCols.region(dmtr)
-			combRank <- RnBeads:::combinedRanking.tab(dmtr4ranks, rerank=FALSE)
-			dmtr$combinedRank <- combRank
-		}
-		diffTabs <- c(diffTabs,list(dmtr))
-		logger.status(c("Computed table for", rt))
-	}
-	names(diffTabs) <- regionTypes
-	logger.completed()
-	return(diffTabs)
+computeDiffAcc.rnb.nome.bin.region <- function(dsn, dmtp, inds.g1, inds.g2, regionTypes = getRegionTypes(dsn), ...) {
+  # sanity checks
+  if (length(union(inds.g1, inds.g2)) != (length(inds.g1) + length(inds.g2))) {
+    logger.error("Overlapping sample sets in differential methylation analysis")
+  }
+  logger.start("Computing Differential Methylation Tables (Region Level)")
+  skipSites <- FALSE
+  if (is.null(dmtp)) {
+    logger.info("Computing differential methylation for regions directly (NOT using site-specific differential methylation)")
+    skipSites <- TRUE
+  }
+  diffTabs <- list()
+  for (rt in regionTypes) {
+    if (skipSites) {
+      covMat <- getCovg(dsn, rt, asMatrix = TRUE)
+      dmtr <- RnBeads:::computeDiffMeth.bin.site(getMeth(dsn, rt, asMatrix = TRUE), inds.g1, inds.g2, covg = covMat, ...)
+    } else {
+      inclCov <- !is.null(getCovg(dsn, "sites", asMatrix = TRUE))
+      regions2sites <- getRegionMapping(dsn, rt)
+      dmtr <- RnBeads:::computeDiffTab.default.region(dmtp, regions2sites, includeCovg = inclCov)
+      dmtr4ranks <- RnBeads:::extractRankingCols.region(dmtr)
+      combRank <- RnBeads:::combinedRanking.tab(dmtr4ranks, rerank = FALSE)
+      dmtr$combinedRank <- combRank
+    }
+    diffTabs <- c(diffTabs, list(dmtr))
+    logger.status(c("Computed table for", rt))
+  }
+  names(diffTabs) <- regionTypes
+  logger.completed()
+  return(diffTabs)
 }
 
 #' computeDiffAcc.rnb.nome
@@ -67,70 +67,71 @@ computeDiffAcc.rnb.nome.bin.region <- function(dsn, dmtp, inds.g1, inds.g2, regi
 #' @return an \code{RnBDiffMeth} object. See class description for details.
 #' @author Fabian Mueller
 #' @export
-computeDiffAcc.rnb.nome <- function(dsn, cmpCols, regionTypes=getRegionTypes(dsn), covgThres=5L,
-		allPairs=TRUE, adjPairCols=NULL,
-		adjCols=NULL,
-		skipSites=FALSE,
-		disk.dump=rnb.getOption("disk.dump.big.matrices"),disk.dump.dir=tempfile(pattern="diffMethTables_"),
-		...){
+computeDiffAcc.rnb.nome <- function(dsn, cmpCols, regionTypes = getRegionTypes(dsn), covgThres = 5L,
+                                    allPairs = TRUE, adjPairCols = NULL,
+                                    adjCols = NULL,
+                                    skipSites = FALSE,
+                                    disk.dump = rnb.getOption("disk.dump.big.matrices"), disk.dump.dir = tempfile(pattern = "diffMethTables_"),
+                                    ...) {
+  logger.start("Retrieving comparison info")
+  cmpInfo <- getComparisonInfo(dsn, cmpNames = cmpCols, regionTypes = regionTypes, allPairs = allPairs, adjPairCols = adjPairCols, minGrpSize = 1L, maxGrpCount = NULL)
+  logger.completed()
+  if (is.null(cmpInfo)) {
+    return(NULL)
+  }
 
-	logger.start("Retrieving comparison info")
-	cmpInfo <- getComparisonInfo(dsn, cmpNames=cmpCols, regionTypes=regionTypes, allPairs=allPairs, adjPairCols=adjPairCols, minGrpSize=1L, maxGrpCount=NULL)
-	logger.completed()
-	if (is.null(cmpInfo)) {
-		return(NULL)
-	}
+  diff.method <- "limma"
+  logger.start("Computing differential methylation tables")
 
-	diff.method <- "limma"
-	logger.start("Computing differential methylation tables")
+  diffmeth <- new("RnBDiffMeth", site.test.method = diff.method, disk.dump = disk.dump, disk.path = disk.dump.dir)
 
-	diffmeth <- new("RnBDiffMeth",site.test.method=diff.method,disk.dump=disk.dump,disk.path=disk.dump.dir)
-	
-	for (i in 1:length(cmpInfo)){
-		cmpInfo.cur <- cmpInfo[[i]]
-		logger.start(c("Comparing:",cmpInfo.cur$comparison))
-		if (cmpInfo.cur$paired){
-			logger.status("Conducting PAIRED analysis")
-		}
+  for (i in 1:length(cmpInfo)) {
+    cmpInfo.cur <- cmpInfo[[i]]
+    logger.start(c("Comparing:", cmpInfo.cur$comparison))
+    if (cmpInfo.cur$paired) {
+      logger.status("Conducting PAIRED analysis")
+    }
 
-		if (skipSites){
-			logger.info("Skipping site-specific differential methylation calling")
-			dm <- NULL
-		} else {
-			dm <- RnBeads:::computeDiffMeth.bin.site(
-					getMeth(dsn, asMatrix=TRUE), inds.g1=cmpInfo.cur$group.inds$group1, inds.g2=cmpInfo.cur$group.inds$group2,
-					covg=getCovg(dsn, asMatrix=TRUE), covg.thres=covgThres,
-					paired=cmpInfo.cur$paired, adjustment.table=cmpInfo.cur$adjustment.table,
-					...
-			)
-			diffmeth <- addDiffMethTable(diffmeth,dm,cmpInfo.cur$comparison,"sites",cmpInfo.cur$group.names)
-		}
-		cleanMem()
-		if (length(cmpInfo.cur$region.types)>0){
-			if (skipSites){
-				dmr <- computeDiffAcc.rnb.nome.bin.region(dsn, NULL,
-					cmpInfo.cur$group.inds$group1, cmpInfo.cur$group.inds$group2,
-					regionTypes=cmpInfo.cur$region.types,
-					covg.thres=covgThres,
-					paired=cmpInfo.cur$paired, adjustment.table=cmpInfo.cur$adjustment.table,
-					...
-				)
-			} else {
-				dmr <- computeDiffAcc.rnb.nome.bin.region(dsn,dm,
-					cmpInfo.cur$group.inds$group1,cmpInfo.cur$group.inds$group2,
-					regionTypes=cmpInfo.cur$region.types
-				)	
-			}		
-			for (rt in cmpInfo.cur$region.types){
-				diffmeth <- addDiffMethTable(diffmeth,dmr[[rt]],cmpInfo.cur$comparison, 
-					rt, cmpInfo.cur$group.names
-				)
-			}
-		}
-		logger.completed()
-	}
+    if (skipSites) {
+      logger.info("Skipping site-specific differential methylation calling")
+      dm <- NULL
+    } else {
+      dm <- RnBeads:::computeDiffMeth.bin.site(
+        getMeth(dsn, asMatrix = TRUE),
+        inds.g1 = cmpInfo.cur$group.inds$group1, inds.g2 = cmpInfo.cur$group.inds$group2,
+        covg = getCovg(dsn, asMatrix = TRUE), covg.thres = covgThres,
+        paired = cmpInfo.cur$paired, adjustment.table = cmpInfo.cur$adjustment.table,
+        ...
+      )
+      diffmeth <- addDiffMethTable(diffmeth, dm, cmpInfo.cur$comparison, "sites", cmpInfo.cur$group.names)
+    }
+    cleanMem()
+    if (length(cmpInfo.cur$region.types) > 0) {
+      if (skipSites) {
+        dmr <- computeDiffAcc.rnb.nome.bin.region(dsn, NULL,
+          cmpInfo.cur$group.inds$group1, cmpInfo.cur$group.inds$group2,
+          regionTypes = cmpInfo.cur$region.types,
+          covg.thres = covgThres,
+          paired = cmpInfo.cur$paired, adjustment.table = cmpInfo.cur$adjustment.table,
+          ...
+        )
+      } else {
+        dmr <- computeDiffAcc.rnb.nome.bin.region(dsn, dm,
+          cmpInfo.cur$group.inds$group1, cmpInfo.cur$group.inds$group2,
+          regionTypes = cmpInfo.cur$region.types
+        )
+      }
+      for (rt in cmpInfo.cur$region.types) {
+        diffmeth <- addDiffMethTable(
+          diffmeth, dmr[[rt]], cmpInfo.cur$comparison,
+          rt, cmpInfo.cur$group.names
+        )
+      }
+    }
+    logger.completed()
+  }
 
-	diffmeth <- RnBeads:::addComparisonInfo(diffmeth,cmpInfo)
-	logger.completed()
-	return(diffmeth)
+  diffmeth <- RnBeads:::addComparisonInfo(diffmeth, cmpInfo)
+  logger.completed()
+  return(diffmeth)
 }

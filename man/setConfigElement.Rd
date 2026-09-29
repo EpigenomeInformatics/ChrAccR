@@ -132,9 +132,21 @@ Set a configuration item to a given value
   }
   \item{\bold{\code{scGeneActivity}}\code{ = FALSE}}{
       For single-cell analysis only: Compute gene activity from accessibility.
-      Possible options are \code{"RBF"} for radial-basis-function-weighted count aggregation (default when set to \code{TRUE}) or 
+      Possible options are \code{"RBF"} for radial-basis-function-weighted count aggregation (default when set to \code{TRUE}) or
       \code{"Cicero"} for Cicero correlation-based aggregation
   }
+ \item{\bold{\code{minMapq}}\code{ = 20}}{
+	 Minimum mapping quality for reads to be considered in allele-specific counting
+ }
+ \item{\bold{\code{minDepth}}\code{ = 10}}{
+	 Minimum total read depth at a SNP for it to be considered in allele-specific counting
+}
+ \item{\bold{\code{maxDepth}}\code{ = 5000}}{
+	 Maximum total read depth at a SNP for it to be considered in allele-specific counting
+}
+\item{\bold{\code{minBaseq}}\code{ = 20}}{
+	 Minimum base quality for reads to be considered in allele-specific counting
+}
 }
 }
 

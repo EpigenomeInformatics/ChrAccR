@@ -16,9 +16,8 @@
 #' @import ggplot2
 #' @import muLogR
 #' @import muRtools
-#' @docType package
-#' @name ChrAccR
-NULL
+#' @keywords internal
+"_PACKAGE"
 
 # # avoid NOTEs in R CMD CHECK
 # utils::globalVariables(c(
