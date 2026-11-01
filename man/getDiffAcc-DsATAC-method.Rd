@@ -24,10 +24,10 @@
 
 \item{comparisonCol}{column name in the sample annotation table to base the comparison on}
 
-\item{grp1Name}{name of the first group in the comparison. if not specified, it will be taken as the first factor level specified in the 
+\item{grp1Name}{name of the first group in the comparison. if not specified, it will be taken as the first factor level specified in the
 sample annotation table in \code{'comparisonCol'}.}
 
-\item{grp2Name}{name of the second group (reference) in the comparison. if not specified, it will be taken as the first factor level specified in the 
+\item{grp2Name}{name of the second group (reference) in the comparison. if not specified, it will be taken as the first factor level specified in the
 sample annotation table in \code{'comparisonCol'}.}
 
 \item{adjustCols}{column names in the sample annotation potentially used to create the design matrix}
@@ -45,7 +45,7 @@ Compute differential accessibility
 \examples{
 \dontrun{
 dsa <- ChrAccRex::loadExample("dsAtac_ia_example")
-daTab <- getDiffAcc(dsa, "IA_prog_peaks", "stimulus", grp1Name="S", grp2Name="U", adjustCols=c("cellType", "donor"))
+daTab <- getDiffAcc(dsa, "IA_prog_peaks", "stimulus", grp1Name = "S", grp2Name = "U", adjustCols = c("cellType", "donor"))
 }
 }
 \author{

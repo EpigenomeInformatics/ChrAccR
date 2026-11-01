@@ -25,3 +25,25 @@ devtools::install_github("EpigenomeInformatics/ChrAccR", dependencies=TRUE)
 ## Getting started
 
 The `ChrAccR` [vignette](https://epigenomeinformatics.github.io/ChrAccR/articles/overview.html) provides a most excellent starting point to get familiar with the package.
+
+## How to cite
+
+If you use `ChrAccR` in your work, please cite it:
+
+> Mueller F, Gunduz IB (2026). ChrAccR: Analyzing chromatin accessibility data in R. R package version 0.9.26. https://github.com/EpigenomeInformatics/ChrAccR
+
+```bibtex
+@Manual{ChrAccR,
+  title = {ChrAccR: Analyzing chromatin accessibility data in R},
+  author = {Fabian Mueller and Irem B. Gunduz},
+  year = {2026},
+  note = {R package version 0.9.26},
+  url = {https://github.com/EpigenomeInformatics/ChrAccR},
+}
+```
+
+The entry for your installed version is available from R:
+
+```r
+print(citation("ChrAccR"), bibtex = TRUE)
+```

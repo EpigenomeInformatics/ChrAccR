@@ -29,7 +29,7 @@
 \item{maxGroupCount}{Maximum number of groups for a column to be considered for comparison.}
 }
 \value{
-a \code{data.frame} with comparison inforamtion containing columns for the comparison name (\code{compName}), 
+a \code{data.frame} with comparison inforamtion containing columns for the comparison name (\code{compName}),
         column in the annotation table (\code{compCol})
         and group names for the two groups in the comparison (\code{grp1Name, grp2Name}),
 }

@@ -11,19 +11,19 @@ A class for accessibility datasets
 
 \describe{
   \item{\code{coord}}{
-	List of coordinates (GRanges objects) for accessibility summarized regions.
+		List of coordinates (GRanges objects) for accessibility summarized regions.
   }
   \item{\code{sampleAnnot}}{
-	Sample annotation Table
+		Sample annotation Table
   }
   \item{\code{genome}}{
-	Genome assembly
+		Genome assembly
   }
   \item{\code{diskDump}}{
-	Flag indicating whether large matrices and objects will be kept on disk rather than in main memory.
+		Flag indicating whether large matrices and objects will be kept on disk rather than in main memory.
   }
   \item{\code{pkgVersion}}{
-	Version number of the ChrAccR package that created the object
+		Version number of the ChrAccR package that created the object
   }
 }
 }

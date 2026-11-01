@@ -45,15 +45,15 @@ Create a DsATAC dataset from multiple input bam files
 datasetUrl <- "https://s3.amazonaws.com/muellerf/data/ChrAccR/data/tutorial/tcells.zip"
 downFn <- "tcells.zip"
 download.file(datasetUrl, downFn)
-unzip(downFn, exdir=".")
+unzip(downFn, exdir = ".")
 # prepare the sample annotation table
 sampleAnnotFn <- file.path("tcells", "samples.tsv")
 bamDir <- file.path("tcells", "bam")
-sampleAnnot <- read.table(sampleAnnotFn, sep="\t", header=TRUE, stringsAsFactors=FALSE)
+sampleAnnot <- read.table(sampleAnnotFn, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
 # add a column that ChrAccR can use to find the correct bam file for each sample
-sampleAnnot[,"bamFilenameFull"] <- file.path(bamDir, sampleAnnot[,"bamFilename"])
+sampleAnnot[, "bamFilenameFull"] <- file.path(bamDir, sampleAnnot[, "bamFilename"])
 # prepare the dataset
-dsa_fromBam <- DsATAC.bam(sampleAnnot, "bamFilenameFull", "hg38", regionSets=NULL, sampleIdCol="sampleId")
+dsa_fromBam <- DsATAC.bam(sampleAnnot, "bamFilenameFull", "hg38", regionSets = NULL, sampleIdCol = "sampleId")
 }
 }
 \author{

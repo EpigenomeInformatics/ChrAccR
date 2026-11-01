@@ -1,3 +1,5 @@
+url: https://epigenomeinformatics.github.io/ChrAccR
+
 template:
   params:
     bootswatch: sandstone
@@ -8,12 +10,16 @@ navbar:
     menu:
       - text: Overview
         href: articles/overview.html
+      - text: Allele-specific accessibility
+        href: articles/allelespec.html
       - text: Single-cell analysis
         href: articles/singlecell.html
   - text: Resource
     href: articles/resource.html
   - text: Reference
     href: reference/index.html
+  - text: Changelog
+    href: news/index.html
   - text: GitHub
     icon: fa-github
     href: https://github.com/EpigenomeInformatics/ChrAccR
@@ -21,4 +27,3 @@ navbar:
 authors:
   Fabian Mueller:
     href: http://epigenome-informatics.org
-# To automatically build the site after TravisCI checks: https://www.datacamp.com/community/tutorials/cd-package-docs-pkgdown-travis

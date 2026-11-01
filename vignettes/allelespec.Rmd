@@ -1,0 +1,368 @@
+---
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
+    number_sections: true
+author: Irem B. Gunduz
+date: "`r Sys.Date()`"
+title: |
+  | Allele-specific accessibility
+  | using ChrAccR
+vignette: >
+  %\VignetteIndexEntry{allelespec}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = ">"
+)
+```
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri(system.file(file.path("extdata", "chraccr_logo.png"), package="ChrAccR")), 
+               alt = 'logo', 
+               style = 'position:absolute; top:0; right:0; padding:10px; height:96px;')
+```
+
+# Introduction
+
+At a heterozygous site, both alleles share the same nucleus, the same transcription factors and the same sequencing library. If one allele is covered by more ATAC-seq reads than the other, the difference can therefore be attributed to the DNA sequence itself. This is referred to as allele-specific chromatin accessibility (ASC). `ChrAccR` stores allele-specific counts in a `DsASC` object, a subclass of `DsAcc` that holds a reference and an alternative allele count matrix (sites x samples) next to the usual peak accessibility matrix.
+
+This vignette covers counting alleles at heterozygous sites, cleaning the counts, testing for allelic imbalance, comparing imbalance between groups of samples and relating imbalance to predicted transcription factor binding. Steps that require a computing cluster are shown but not run. The scripts we used for these steps are available in the AlleleSpeC repository (<https://github.com/EpigenomeInformatics/allele_spec>).
+
+In addition to the usual `ChrAccR` dependencies, the allele-specific functions require the following packages:
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+BiocManager::install(c("VariantAnnotation", "Rsamtools", "HDF5Array", "DelayedArray",
+                       "JASPAR2020", "TFBSTools", "motifmatchr",
+                       "BSgenome.Hsapiens.UCSC.hg38"))
+install.packages("ashr")
+```
+
+First, let us load the package and prepare the plot style used in the remainder of this vignette.
+```{r, message = FALSE, warning = FALSE}
+library(ChrAccR)
+library(data.table)
+# load ggplot library and set the plotting theme
+library(ggplot2)
+theme_set(theme_bw(base_size = 11))
+```
+
+# Preparing the data
+
+## Genotyping and mapping-bias correction
+
+Two steps are performed outside of `ChrAccR` before any alleles are counted. First, genotypes are called for each donor, jointly across all of that donor's libraries, and only biallelic heterozygous single-nucleotide variants are retained. Second, reference mapping bias is removed. Reads carrying the alternative allele align slightly worse than reads matching the reference genome, which shifts every site towards the reference allele. WASP [@vandeGeijn:nmeth:2015] corrects for this by remapping each read with its alleles swapped and discarding reads that do not map to the same location. We recommend checking the corrected libraries: the pooled reference allele fraction should be close to 0.5, and values above about 0.55 indicate remaining bias.
+
+The sample annotation table should contain the columns `sampleId`, `bamFilename` and `donor`, as well as any columns used for grouping, such as `cellType` and `stimulus`:
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+meta <- fread("sampleAnnot.csv")
+meta[, donor := as.character(donor)]
+# point to the WASP-corrected BAM files
+meta[, bamFilename := file.path(waspDir, paste0(sampleId, "_wasp.bam"))]
+meta <- meta[file.exists(bamFilename)]
+```
+
+## Building a shared site list
+
+Each donor is heterozygous at a different set of sites. The `buildMasterSNPs` function reads the VCF files of all donors and returns a single sorted list of sites, including a `donorMembership` column that records which donors are heterozygous at each site. Counting all samples against this shared list keeps the sites aligned across datasets.
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+masterGr <- buildMasterSNPs(donors = unique(meta$donor), vcfDir = vcfDir, genome = "hg38")
+saveRDS(masterGr, file.path(ascDir, "masterSNPs.rds"))
+```
+
+## Counting alleles
+
+The `DsASC.gatk` function counts reads supporting the reference and the alternative allele at each site. If a sample's donor is not heterozygous at a site, the count is set to `NA` rather than zero, so that homozygous sites are not mistaken for balanced ones. For large datasets, we recommend counting one cell type at a time and setting `diskDump = TRUE`, which writes the counts to disk sample by sample and keeps memory usage low.
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+setConfigElement("minMapq", 20L)
+setConfigElement("minBaseq", 20L)
+setConfigElement("maxDepth", 5000L)
+
+ct <- meta$cellType[1]
+dsAsc <- DsASC.gatk(
+  sampleAnnot = as.data.frame(meta[cellType == ct,
+                                   .(sampleId, bamFilename, donor, cellType, stimulus)]),
+  vcfDir      = vcfDir,
+  genome      = "hg38",
+  diskDump    = TRUE,
+  masterGr    = masterGr
+)
+```
+
+## Restricting to accessible regions
+
+Allelic imbalance is only informative within accessible chromatin. The following code removes sex chromosomes and lowly covered sites, retains sites within consensus peaks and adds the peak accessibility matrix from a `DsATAC` dataset:
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+dsAtac  <- loadDsAcc(atacDir)
+peakGr  <- getCoord(dsAtac, "cons_peaks")
+peakMat <- getCounts(dsAtac, "cons_peaks")
+names(peakGr)     <- paste0("peak_", seq_along(peakGr))
+rownames(peakMat) <- names(peakGr)
+
+# allelic balance is not defined on the sex chromosomes
+dsAsc <- filterChroms(dsAsc, remove = c("chrX", "chrY", "chrM"))
+# keep sites with at least 5 reads in at least one sample
+dsAsc <- filterLowCovg(dsAsc, thresh = 5, reqSamples = 1)
+# keep sites within consensus peaks
+dsAsc <- annotateASCSites(dsAsc, peakGr)
+dsAsc <- filterASCByPeaks(dsAsc)
+dsAsc <- setAccessibility(dsAsc, peakMat[, getSamples(dsAsc)], peakGr)
+```
+
+# Loading the example data
+
+The `ChrAccRex` data package contains a small example dataset for allele-specific accessibility. If you haven't already installed `ChrAccRex` use
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+devtools::install_github("EpigenomeInformatics/ChrAccRex")
+```
+
+The example data used in this vignette was designed for illustrating the functionality of `ChrAccR` rather than a full analysis. It contains allele-specific counts for two cell types, each profiled resting (`U`) and stimulated (`S`), taken from the human immune cell atlas of [@Calderon:ng:2019], together with precomputed motif scores for the covered sites. It can be loaded using:
+```{r, message = FALSE, warning = FALSE}
+example   <- ChrAccRex::loadExample("dsAsc_ia_example")
+dsDemo    <- example$ds
+deltaDemo <- example$delta
+annotDemo <- as.data.table(getSampleAnnot(dsDemo))
+dsDemo
+table(annotDemo$cellType, annotDemo$stimulus)
+```
+
+# `DsASC` data structure
+
+The allele-specific count matrices can be retrieved using `getRefCounts` and `getAltCounts`. `getAllelicBalance` returns the fraction of reads supporting the alternative allele, setting entries with low coverage to `NA`:
+```{r, message = FALSE, warning = FALSE}
+refMat <- as.matrix(getRefCounts(dsDemo))
+altMat <- as.matrix(getAltCounts(dsDemo))
+dim(refMat)
+balance <- getAllelicBalance(dsDemo, minCoverage = 10)
+summary(as.vector(balance))
+```
+
+# Testing for allelic imbalance
+
+## Cleaning the counts
+
+Before testing, `ChrAccR` provides functions for removing common artifacts. `ascDropHomozygous` masks sites that were called heterozygous but appear homozygous once all samples of a donor are combined; such sites would otherwise show up as strong but false imbalance. `ascFilterRegions` removes sites in blacklisted regions, where genotyping and mapping-bias correction are less reliable. `ascPoolReplicates` sums the counts of technical replicates, increasing the number of reads per test. The example counts have already been processed with these steps.
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+# mask sites that look homozygous within a donor
+cleaned <- ascDropHomozygous(refMat, altMat, annotDemo,
+                             minMinor = 2L, minMinorFrac = 0.05, minTotal = 10L)
+# remove sites in blacklisted regions
+keepIds     <- ascFilterRegions(rownames(cleaned$ref), blacklistGr)
+cleaned$ref <- cleaned$ref[keepIds, ]
+cleaned$alt <- cleaned$alt[keepIds, ]
+# combine technical replicates
+pooled <- ascPoolReplicates(cleaned$ref, cleaned$alt, annotDemo,
+                            groupCols = c("cellType", "stimulus", "donor"))
+```
+
+## Statistical testing
+
+Using the `calcASCStatistics` function, we can test each covered site in each sample for allelic imbalance. It performs a two-sided binomial test against an expected allele fraction of 0.5 and corrects the p-values within each sample. `minAllele` requires a minimum number of reads on both alleles.
+```{r, message = FALSE, warning = FALSE}
+ascStats <- calcASCStatistics(dsDemo, minCoverage = 10, minAllele = 2)
+ascStats[, cellType := annotDemo$cellType[match(sampleId, annotDemo$sampleId)]]
+# the most significant sites
+ascStats[order(fdr)][1:5, .(snpId, sampleId, cellType, ref, alt, total, log2FC, fdr)]
+```
+
+The results can be visualized as a volcano plot, showing effect size against significance, and as a Manhattan plot along the genome:
+```{r, message = FALSE, warning = FALSE}
+plotASCVolcano(dsDemo, stats = ascStats, sigCut = 0.1)
+```
+
+```{r, message = FALSE, warning = FALSE}
+plotASCManhattan(dsDemo, stats = ascStats, sigCut = 0.1)
+```
+
+For datasets with several donors, `filterForRecurrence` retains sites that are significant in a minimum number of donors:
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+recurrent <- filterForRecurrence(ascStats, minDonors = 2, fdrCutoff = 0.1)
+```
+
+## Comparing groups of samples
+
+To identify sites that are imbalanced in one group of samples but not in another, we combine the reads of each group and test each site once per group. Here, the two groups are the two cell types, but any grouping from the sample annotation can be used in the same way.
+```{r, message = FALSE, warning = FALSE}
+groupA <- annotDemo[cellType == "TeffNaive", sampleId]
+groupB <- annotDemo[cellType == "Bmem", sampleId]
+
+# binomial test on the reads combined across a group of samples
+groupStats <- function(sids) {
+  r <- rowSums(refMat[, sids, drop = FALSE])
+  a <- rowSums(altMat[, sids, drop = FALSE])
+  n <- r + a
+  p <- pmin(1, 2 * pmin(pbinom(r, n, 0.5), pbinom(r - 1, n, 0.5, lower.tail = FALSE)))
+  data.table(snpId = rownames(refMat), refFrac = r / n, total = n, fdr = p.adjust(p, "BH"))
+}
+
+groups <- merge(groupStats(groupA), groupStats(groupB), by = "snpId", suffixes = c(".A", ".B"))
+# imbalanced in one group, balanced in the other despite good coverage
+siteA <- groups[total.B >= 20 & fdr.B > 0.5][order(fdr.A)][1, snpId]
+siteB <- groups[total.A >= 20 & fdr.A > 0.5][order(fdr.B)][1, snpId]
+groups[snpId %in% c(siteA, siteB)]
+```
+
+To visualize such a site, we combine the reads of each cell type and condition, matching the way the sites were tested, and plot the reference allele fraction with its exact binomial confidence interval:
+```{r, message = FALSE, warning = FALSE}
+plotGroupBalance <- function(snp) {
+  d <- annotDemo[, .(ref = sum(refMat[snp, sampleId], na.rm = TRUE),
+                     alt = sum(altMat[snp, sampleId], na.rm = TRUE)),
+                 by = .(cellType, stimulus)]
+  d <- d[ref + alt > 0]
+  ci <- t(mapply(function(r, n) binom.test(r, n)$conf.int, d$ref, d$ref + d$alt))
+  d[, `:=`(refFrac = ref / (ref + alt), lo = ci[, 1], hi = ci[, 2])]
+
+  ggplot(d, aes(x = refFrac, y = cellType, colour = stimulus)) +
+    geom_vline(xintercept = 0.5, linetype = "dashed", colour = "grey60") +
+    geom_errorbar(aes(xmin = lo, xmax = hi), width = 0,
+                  position = position_dodge(width = 0.5)) +
+    geom_point(size = 2, position = position_dodge(width = 0.5)) +
+    scale_x_continuous(limits = c(0, 1)) +
+    labs(x = "Proportion of reads mapping to the reference allele", y = NULL, title = snp)
+}
+```
+
+```{r, message = FALSE, warning = FALSE, fig.height = 2.5}
+plotGroupBalance(siteA)
+```
+
+```{r, message = FALSE, warning = FALSE, fig.height = 2.5}
+plotGroupBalance(siteB)
+```
+
+The per-library view of the same site, with one point for each sample, can be obtained using `plotASCBalance`:
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+plotASCBalance(dsDemo, siteB, colorBy = "stimulus", orderBy = "cellType",
+               sigStats = ascStats, sigCut = 0.1)
+```
+
+## Sharing across cell types
+
+Because all cell types were counted against the same site list, their datasets can be combined using `mergeDsASCArray`. The `ascSharing` function takes the sites that are significant in one group and estimates, using `ashr` [@Stephens:biostat:2017], the fraction of these sites that also show imbalance in another group. `estimateSharedImbalance` performs the same comparison directly on two `DsASC` objects.
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+merged <- mergeDsASCArray(ascDir)
+
+aggA <- ascAggregate(refMat, altMat, groupA)
+aggB <- ascAggregate(refMat, altMat, groupB)
+sharing <- ascSharing(aggA$ref, aggA$alt, aggB$ref, aggB$alt, fdrA = 0.01, minReadsB = 4)
+
+shared <- estimateSharedImbalance(dsGroupA, dsGroupB, fdrCutoff = 0.01)
+```
+
+# Allelic imbalance and transcription factor binding
+
+If a variant affects transcription factor binding, the allele preferred by the factor should also be the more accessible one. The example dataset contains the difference in motif score between the alternative and the reference allele (`delta`) for a set of transcription factor motifs. We label each site by the allele its motif prefers if the score changes by more than 1, and treat all other sites as background:
+```{r, message = FALSE, warning = FALSE}
+prefDelta <- 1
+prefDt <- data.table::copy(deltaDemo)
+prefDt[, preference := fifelse(delta >  prefDelta, "Alternative",
+                       fifelse(delta < -prefDelta, "Reference", "No preference"))]
+```
+
+Next, we choose a cell type and the conditions to compare, combine the reads of that cell type's samples for each condition and remove sites with fewer than 4 reads:
+```{r, message = FALSE, warning = FALSE}
+focusCellType <- "TeffNaive"
+conditions    <- c(U = "Resting", S = "Stimulated")
+
+focusSamples <- annotDemo[cellType == focusCellType, sampleId]
+condFrac <- function(cond) {
+  sids <- annotDemo[stimulus == cond & sampleId %in% focusSamples, sampleId]
+  r <- rowSums(refMat[, sids, drop = FALSE])
+  a <- rowSums(altMat[, sids, drop = FALSE])
+  data.table(snpId = rownames(refMat), refFrac = r / (r + a), total = r + a,
+             condition = conditions[[cond]])
+}
+
+fracDt <- rbindlist(lapply(names(conditions), condFrac))
+fracDt <- fracDt[total >= 4]
+
+plotDt <- merge(fracDt, prefDt, by = "snpId", allow.cartesian = TRUE)
+plotDt[, preference := factor(preference, levels = c("Alternative", "No preference", "Reference"))]
+plotDt[, condition := factor(condition, levels = unname(conditions))]
+```
+
+Sites at which the motif prefers the reference allele are expected to show a reference allele fraction above 0.5, and sites at which it prefers the alternative allele a fraction below 0.5:
+```{r, message = FALSE, warning = FALSE, fig.height = 7}
+ggplot(plotDt, aes(x = condition, y = refFrac, fill = preference)) +
+  geom_hline(yintercept = 0.5, linetype = "dotted") +
+  geom_boxplot(outlier.size = 0.3, position = position_dodge(width = 0.8)) +
+  facet_wrap(~ tf, ncol = 3) +
+  scale_fill_manual(values = c("Alternative" = "#1B9E77",
+                               "No preference" = "#D95F02",
+                               "Reference" = "#7570B3"), name = "Binding preference") +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(x = NULL, y = "Proportion of reads mapping to the reference allele") +
+  theme(legend.position = "bottom")
+```
+
+The difference between the two groups can be tested for each motif and condition using a Wilcoxon rank-sum test:
+```{r, message = FALSE, warning = FALSE}
+plotDt[preference %in% c("Reference", "Alternative"),
+       .(n_ref = sum(preference == "Reference"),
+         n_alt = sum(preference == "Alternative"),
+         p = tryCatch(wilcox.test(refFrac ~ droplevels(preference))$p.value,
+                      error = function(e) NA_real_)),
+       by = .(tf, condition)][order(p)]
+```
+
+# Session Info
+
+```{r}
+Sys.Date()
+```
+
+```{r}
+sessionInfo()
+```
+
+# References
+
+---
+link-citations: yes
+references:
+  - id: Calderon:ng:2019
+    title: Landscape of stimulation-responsive chromatin across diverse human immune cells
+    author:
+    - family: Calderon
+      given: Diego
+    - family: Pritchard
+      given: Jonathan K
+    container-title: Nature Genetics
+    volume: 51
+    page: 1494-1505
+    issued:
+      year: 2019
+    DOI: 10.1038/s41588-019-0505-9
+  - id: vandeGeijn:nmeth:2015
+    title: 'WASP: allele-specific software for robust molecular quantitative trait locus discovery'
+    author:
+    - family: van de Geijn
+      given: Bryce
+    - family: McVicker
+      given: Graham
+    - family: Gilad
+      given: Yoav
+    - family: Pritchard
+      given: Jonathan K
+    container-title: Nature Methods
+    volume: 12
+    page: 1061-1063
+    issued:
+      year: 2015
+    DOI: 10.1038/nmeth.3582
+  - id: Stephens:biostat:2017
+    title: 'False discovery rates: a new deal'
+    author:
+    - family: Stephens
+      given: Matthew
+    container-title: Biostatistics
+    volume: 18
+    page: 275-294
+    issued:
+      year: 2017
+    DOI: 10.1093/biostatistics/kxw041
+---
