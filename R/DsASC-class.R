@@ -469,6 +469,42 @@ filterASCByPeaks <- function(dsObj) {
 # Downstream Analysis
 # ==============================================================================
 
+# ------------------------------------------------------------------------------
+# Internal: beta-binomial test against an allele fraction of 0.5
+# ------------------------------------------------------------------------------
+# A beta-binomial with mean 0.5 and overdispersion rho has shape parameters
+# a = b = 0.5 * (1 - rho) / rho.
+
+# Log-likelihood of allele counts k out of n under a symmetric beta-binomial.
+.bbLogLik <- function(rho, k, n) {
+  ab <- 0.5 * (1 - rho) / rho
+  sum(lchoose(n, k) + lbeta(k + ab, n - k + ab) - lbeta(ab, ab))
+}
+
+# Maximum-likelihood overdispersion of a symmetric beta-binomial.
+.bbEstimateRho <- function(k, n, interval = c(1e-6, 0.99)) {
+  fit <- stats::optimize(function(lr) -.bbLogLik(exp(lr), k, n),
+                         interval = log(interval))
+  exp(fit$minimum)
+}
+
+# Two-sided beta-binomial p-value against 0.5: twice the smaller tail, the
+# same convention as the binomial test. The distribution is computed once for
+# each distinct coverage.
+.bbPval <- function(k, n, rho) {
+  ab <- 0.5 * (1 - rho) / rho
+  p  <- numeric(length(k))
+  for (m in unique(n)) {
+    idx <- which(n == m)
+    x   <- 0:m
+    pmf <- exp(lchoose(m, x) + lbeta(x + ab, m - x + ab) - lbeta(ab, ab))
+    lower <- cumsum(pmf)
+    upper <- rev(cumsum(rev(pmf)))
+    p[idx] <- pmin(1, 2 * pmin(lower[k[idx] + 1], upper[k[idx] + 1]))
+  }
+  p
+}
+
 #' Calculate ASC Statistics (Calderon et al. 2019)
 #'
 #' Tests for allele-specific chromatin accessibility at each heterozygous site,
@@ -476,6 +512,16 @@ filterASCByPeaks <- function(dsObj) {
 #' removes reference mapping bias), each site is tested with a two-sided
 #' binomial test against the null hypothesis of a 50:50 ref:alt split.
 #' Multiple-testing correction (Benjamini-Hochberg) is applied PER SAMPLE.
+#'
+#' The binomial test assumes that read counts vary around 0.5 only through
+#' sampling. Real data are usually overdispersed: allele fractions vary between
+#' sites more than binomial sampling allows, which makes the binomial test
+#' anti-conservative. With \code{betabinom = TRUE} each site is instead tested
+#' with a beta-binomial distribution centred on 0.5, whose overdispersion
+#' \code{rho} is estimated per sample by maximum likelihood across all tested
+#' sites, unless supplied. Because the estimate includes truly imbalanced sites,
+#' it is slightly inflated, which makes the test conservative. As \code{rho}
+#' approaches 0 the beta-binomial test reduces to the binomial one.
 #'
 #' Note: the null is a fixed p = 0.5. WASP is responsible for removing mapping
 #' bias upstream; re-centering the null on the observed (pooled) allele fraction
@@ -492,12 +538,25 @@ filterASCByPeaks <- function(dsObj) {
 #'                    low-confidence "pseudo-ASC" that inflate the ref skew and
 #'                    the significant count. Requiring >= 2 reads on both alleles
 #'                    is the standard ASE/ASC guard and keeps calls two-sided.
+#' @param betabinom Logical. If \code{FALSE} (default), sites are tested with a
+#'                    binomial test against 0.5, as in Calderon et al. If
+#'                    \code{TRUE}, a beta-binomial test is used, which accounts
+#'                    for overdispersion.
+#' @param rho       Overdispersion of the beta-binomial test, between 0 and 1.
+#'                    Either a single value used for all samples, a named
+#'                    vector with one value per sample, or \code{NULL}
+#'                    (default) to estimate it per sample. Ignored when
+#'                    \code{betabinom = FALSE}.
 #' @return A data.table with one row per tested (snp x sample): ref, alt, total,
 #'         log2FC (alt vs ref effect size), pVal, fdr (per-sample BH), and peakId.
+#'         With \code{betabinom = TRUE} it also contains the overdispersion
+#'         \code{rho} used for each sample.
 #' @export
-calcASCStatistics <- function(dsObj, minCoverage = 10, minAllele = 2) {
+calcASCStatistics <- function(dsObj, minCoverage = 10, minAllele = 2,
+                              betabinom = FALSE, rho = NULL) {
 
-  logger.start("Calculating ASC Statistics (binomial test vs p = 0.5)")
+  testName <- if (betabinom) "beta-binomial" else "binomial"
+  logger.start(paste0("Calculating ASC Statistics (", testName, " test vs p = 0.5)"))
 
   refMat   <- as.matrix(getRefCounts(dsObj))
   altMat   <- as.matrix(getAltCounts(dsObj))
@@ -521,13 +580,38 @@ calcASCStatistics <- function(dsObj, minCoverage = 10, minAllele = 2) {
   # Reported for interpretation only; not used in the test.
   dt$log2FC <- log2((dt$alt + 1) / (dt$ref + 1))
 
-  # Two-sided binomial test against a fixed null of p = 0.5 (paper's approach).
-  logger.info("Running two-sided binomial test against p = 0.5")
-  p_lower <- pbinom(dt$alt,     size = dt$total, prob = 0.5)
-  p_upper <- pbinom(dt$alt - 1, size = dt$total, prob = 0.5, lower.tail = FALSE)
+  if (!betabinom) {
+    # Two-sided binomial test against a fixed null of p = 0.5 (paper's approach).
+    logger.info("Running two-sided binomial test against p = 0.5")
+    p_lower <- pbinom(dt$alt,     size = dt$total, prob = 0.5)
+    p_upper <- pbinom(dt$alt - 1, size = dt$total, prob = 0.5, lower.tail = FALSE)
 
-  dt$pVal <- 2 * pmin(p_lower, p_upper)
-  dt$pVal[dt$pVal > 1] <- 1.0
+    dt$pVal <- 2 * pmin(p_lower, p_upper)
+    dt$pVal[dt$pVal > 1] <- 1.0
+  } else {
+    # Overdispersion per sample: estimated, one shared value, or one per sample.
+    samples <- unique(as.character(dt$sampleId))
+    if (is.null(rho)) {
+      logger.info("Estimating beta-binomial overdispersion per sample")
+      rhoS <- setNames(vapply(samples, function(s) {
+        x <- dt[as.character(sampleId) == s]
+        .bbEstimateRho(x$alt, x$total)
+      }, numeric(1)), samples)
+    } else if (length(rho) == 1) {
+      rhoS <- setNames(rep(rho, length(samples)), samples)
+    } else {
+      if (is.null(names(rho)) || !all(samples %in% names(rho))) {
+        stop("rho must be a single value or be named with every tested sample.")
+      }
+      rhoS <- setNames(as.numeric(rho[samples]), samples)
+    }
+    if (any(rhoS <= 0 | rhoS >= 1)) stop("rho must lie strictly between 0 and 1.")
+
+    dt[, rho := rhoS[as.character(sampleId)]]
+    logger.info(paste0("Running two-sided beta-binomial test against p = 0.5 ",
+                       "(median rho = ", signif(stats::median(rhoS), 3), ")"))
+    dt[, pVal := .bbPval(alt, total, rho[1]), by = sampleId]
+  }
 
   # Benjamini-Hochberg FDR computed PER SAMPLE (as in the paper).
   dt[, fdr := p.adjust(pVal, method = "BH"), by = sampleId]
@@ -728,7 +812,8 @@ mergeDsASCArray <- function(dir, pattern = "^ds_asc_.*\\.rds$") {
 #'
 #' @param refV,altV  integer vectors of reference / alternative counts.
 #' @return list(total, fdr) with BH-adjusted two-sided binomial p.
-#' @export
+#' @keywords internal
+#' @noRd
 ascSitePosterior <- function(refV, altV) {
   total <- refV + altV
   pV <- 2 * pmin(stats::pbinom(refV, total, 0.5), stats::pbinom(altV, total, 0.5))
@@ -931,16 +1016,6 @@ ascPoolReplicates <- function(refMat, altMat, annot,
 # ------------------------------------------------------------------------------
 # Donor utilities
 # ------------------------------------------------------------------------------
-
-#' Rank donors by sequencing depth at tested sites
-#' @export
-ascDonorDepth <- function(ref, alt, annot) {
-  data.table::rbindlist(lapply(unique(annot$donor), function(d) {
-    s <- intersect(annot[donor == d, sampleId], colnames(ref))
-    data.table::data.table(donor = d,
-      total_reads = sum(ref[, s, drop = FALSE]) + sum(alt[, s, drop = FALSE]))
-  }))[order(-total_reads)]
-}
 
 #' Best donor for a SNP: het there (per master membership) and most reads
 #'

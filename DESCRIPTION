@@ -81,7 +81,6 @@ Collate:
     'ChrAccR.R'
     'DsAcc-class.R'
     'DsASC-class.R'
-    'DsASC-tfactivity.R'
     'DsATAC-class.R'
     'DsATACsc-class.R'
     'DsNOMe-class.R'
