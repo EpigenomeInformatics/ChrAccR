@@ -55,7 +55,9 @@ Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     BSgenome.Mmusculus.UCSC.mm10,
     BSgenome.Mmusculus.UCSC.mm9,
-    JASPAR2018
+    JASPAR2018,
+    JASPAR2020,
+    GenomicScores
 Imports:
     S4Vectors,
     IRanges,
@@ -75,12 +77,12 @@ License: GPL-2
 Version: 0.9.26
 VignetteBuilder: knitr
 Encoding: UTF-8
-RoxygenNote: 7.3.3
 Collate: 
     'AllGenerics.R'
     'ChrAccR.R'
     'DsAcc-class.R'
     'DsASC-class.R'
+    'DsASC-analysis.R'
     'DsATAC-class.R'
     'DsATACsc-class.R'
     'DsNOMe-class.R'
@@ -105,3 +107,4 @@ Collate:
     'utils_filehandling.R'
     'utils_motifs.R'
     'workflow.R'
+Config/roxygen2/version: 8.1.1

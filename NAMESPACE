@@ -13,10 +13,15 @@ export(annotateASCSites)
 export(ascAggregate)
 export(ascBestDonor)
 export(ascDropHomozygous)
+export(ascFilterCommonVariants)
 export(ascFilterRegions)
+export(ascMotifPreference)
 export(ascPoolReplicates)
+export(ascPreferenceTable)
+export(ascPreferenceTest)
 export(ascSharing)
 export(ascStratum)
+export(ascTestCounts)
 export(buildMasterSNPs)
 export(calcASCStatistics)
 export(cleanMem)
@@ -157,46 +162,60 @@ import(muLogR)
 import(muRtools)
 importFrom(BiocGenerics,organism)
 importFrom(DelayedArray,close)
-importFrom(GenomeInfoDb,"genome<-")
-importFrom(GenomeInfoDb,"seqlengths<-")
-importFrom(GenomeInfoDb,"seqlevels<-")
-importFrom(GenomeInfoDb,genome)
-importFrom(GenomeInfoDb,organism)
-importFrom(GenomeInfoDb,seqlengths)
-importFrom(GenomeInfoDb,seqlevels)
-importFrom(GenomeInfoDb,seqnames)
-importFrom(GenomeInfoDb,sortSeqlevels)
-importFrom(GenomicRanges,seqnames)
-importFrom(GenomicRanges,start)
-importFrom(IRanges,IRanges)
-importFrom(IRanges,overlapsAny)
-importFrom(S4Vectors,DataFrame)
-importFrom(S4Vectors,elementNROWS)
-importFrom(S4Vectors,queryHits)
-importFrom(S4Vectors,queryLength)
-importFrom(S4Vectors,subjectHits)
-importFrom(data.table,":=")
-importFrom(data.table,as.data.table)
-importFrom(data.table,data.table)
-importFrom(data.table,fread)
-importFrom(data.table,setnames)
-importFrom(stats,as.dist)
-importFrom(stats,as.formula)
-importFrom(stats,as.hclust)
-importFrom(stats,convolve)
-importFrom(stats,cor)
-importFrom(stats,cov)
-importFrom(stats,dist)
-importFrom(stats,ecdf)
-importFrom(stats,fisher.test)
-importFrom(stats,hclust)
-importFrom(stats,median)
-importFrom(stats,na.omit)
-importFrom(stats,quantile)
-importFrom(stats,sd)
-importFrom(stats,var)
-importFrom(utils,combn)
-importFrom(utils,data)
-importFrom(utils,packageVersion)
-importFrom(utils,read.table)
-importFrom(utils,write.table)
+importFrom(GenomeInfoDb,
+  "genome<-",
+  "seqlengths<-",
+  "seqlevels<-",
+  genome,
+  organism,
+  seqlengths,
+  seqlevels,
+  seqnames,
+  sortSeqlevels
+)
+importFrom(GenomicRanges,
+  seqnames,
+  start
+)
+importFrom(IRanges,
+  IRanges,
+  overlapsAny
+)
+importFrom(S4Vectors,
+  DataFrame,
+  elementNROWS,
+  queryHits,
+  queryLength,
+  subjectHits
+)
+importFrom(data.table,
+  ":=",
+  as.data.table,
+  data.table,
+  fread,
+  setnames
+)
+importFrom(stats,
+  as.dist,
+  as.formula,
+  as.hclust,
+  convolve,
+  cor,
+  cov,
+  dist,
+  ecdf,
+  fisher.test,
+  hclust,
+  median,
+  na.omit,
+  quantile,
+  sd,
+  var
+)
+importFrom(utils,
+  combn,
+  data,
+  packageVersion,
+  read.table,
+  write.table
+)
