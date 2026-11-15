@@ -83,7 +83,6 @@ Collate:
     'DsAcc-class.R'
     'DsASC-class.R'
     'DsASC-analysis.R'
-    'DsASC-tfactivity.R'
     'DsATAC-class.R'
     'DsATACsc-class.R'
     'DsNOMe-class.R'

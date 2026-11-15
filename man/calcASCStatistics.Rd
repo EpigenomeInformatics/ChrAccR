@@ -4,7 +4,13 @@
 \alias{calcASCStatistics}
 \title{Calculate ASC Statistics (Calderon et al. 2019)}
 \usage{
-calcASCStatistics(dsObj, minCoverage = 10, minAllele = 2)
+calcASCStatistics(
+  dsObj,
+  minCoverage = 10,
+  minAllele = 2,
+  betabinom = FALSE,
+  rho = NULL
+)
 }
 \arguments{
 \item{dsObj}{A DsASC object (WASP-filtered, peak-annotated).}
@@ -19,10 +25,23 @@ extreme imbalances, with minor allele = 0; those are
 low-confidence "pseudo-ASC" that inflate the ref skew and
 the significant count. Requiring >= 2 reads on both alleles
 is the standard ASE/ASC guard and keeps calls two-sided.}
+
+\item{betabinom}{Logical. If \code{FALSE} (default), sites are tested with a
+binomial test against 0.5, as in Calderon et al. If
+\code{TRUE}, a beta-binomial test is used, which accounts
+for overdispersion.}
+
+\item{rho}{Overdispersion of the beta-binomial test, between 0 and 1.
+Either a single value used for all samples, a named
+vector with one value per sample, or \code{NULL}
+(default) to estimate it per sample. Ignored when
+\code{betabinom = FALSE}.}
 }
 \value{
 A data.table with one row per tested (snp x sample): ref, alt, total,
         log2FC (alt vs ref effect size), pVal, fdr (per-sample BH), and peakId.
+        With \code{betabinom = TRUE} it also contains the overdispersion
+        \code{rho} used for each sample.
 }
 \description{
 Tests for allele-specific chromatin accessibility at each heterozygous site,
@@ -32,6 +51,16 @@ binomial test against the null hypothesis of a 50:50 ref:alt split.
 Multiple-testing correction (Benjamini-Hochberg) is applied PER SAMPLE.
 }
 \details{
+The binomial test assumes that read counts vary around 0.5 only through
+sampling. Real data are usually overdispersed: allele fractions vary between
+sites more than binomial sampling allows, which makes the binomial test
+anti-conservative. With \code{betabinom = TRUE} each site is instead tested
+with a beta-binomial distribution centred on 0.5, whose overdispersion
+\code{rho} is estimated per sample by maximum likelihood across all tested
+sites, unless supplied. Because the estimate includes truly imbalanced sites,
+it is slightly inflated, which makes the test conservative. As \code{rho}
+approaches 0 the beta-binomial test reduces to the binomial one.
+
 Note: the null is a fixed p = 0.5. WASP is responsible for removing mapping
 bias upstream; re-centering the null on the observed (pooled) allele fraction
 is NOT done, because (a) it conflates allele identity across donors, and
