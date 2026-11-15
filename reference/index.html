@@ -149,10 +149,6 @@
         </td>
         <td><p>Annotate DsASC SNPs with Consensus Peaks</p></td>
       </tr><tr><td>
-          <p><code><a href="ascActivityStat.html">ascActivityStat()</a></code> </p>
-        </td>
-        <td><p>Allele-specific TF-activity statistic for one motif's sites</p></td>
-      </tr><tr><td>
           <p><code><a href="ascAggregate.html">ascAggregate()</a></code> </p>
         </td>
         <td><p>Aggregate ref/alt across a set of samples (columns)</p></td>
@@ -161,53 +157,45 @@
         </td>
         <td><p>Best donor for a SNP: het there (per master membership) and most reads</p></td>
       </tr><tr><td>
-          <p><code><a href="ascDonorDepth.html">ascDonorDepth()</a></code> </p>
-        </td>
-        <td><p>Rank donors by sequencing depth at tested sites</p></td>
-      </tr><tr><td>
           <p><code><a href="ascDropHomozygous.html">ascDropHomozygous()</a></code> </p>
         </td>
         <td><p>Drop homozygous / mis-genotyped sites using donor-pooled evidence</p></td>
+      </tr><tr><td>
+          <p><code><a href="ascFilterCommonVariants.html">ascFilterCommonVariants()</a></code> </p>
+        </td>
+        <td><p>Keep SNPs that are common in a reference population</p></td>
       </tr><tr><td>
           <p><code><a href="ascFilterRegions.html">ascFilterRegions()</a></code> </p>
         </td>
         <td><p>Drop ASC sites in blacklist / low-mappability regions</p></td>
       </tr><tr><td>
-          <p><code><a href="ascOrientReads.html">ascOrientReads()</a></code> </p>
+          <p><code><a href="ascMotifPreference.html">ascMotifPreference()</a></code> </p>
         </td>
-        <td><p>Orient allele counts toward the predicted stronger-binding allele</p></td>
+        <td><p>Motif preference of each SNP</p></td>
       </tr><tr><td>
           <p><code><a href="ascPoolReplicates.html">ascPoolReplicates()</a></code> </p>
         </td>
         <td><p>Pool technical-replicate libraries into biological samples</p></td>
       </tr><tr><td>
+          <p><code><a href="ascPreferenceTable.html">ascPreferenceTable()</a></code> </p>
+        </td>
+        <td><p>Reference allele fraction of each SNP in a set of samples</p></td>
+      </tr><tr><td>
+          <p><code><a href="ascPreferenceTest.html">ascPreferenceTest()</a></code> </p>
+        </td>
+        <td><p>Test binding preference against allelic accessibility</p></td>
+      </tr><tr><td>
           <p><code><a href="ascSharing.html">ascSharing()</a></code> </p>
         </td>
         <td><p>Estimate shared-imbalance proportion between two count sets (ashR)</p></td>
-      </tr><tr><td>
-          <p><code><a href="ascSitePosterior.html">ascSitePosterior()</a></code> </p>
-        </td>
-        <td><p>Per-site binomial posterior + FDR for a ref/alt vector</p></td>
       </tr><tr><td>
           <p><code><a href="ascStratum.html">ascStratum()</a></code> </p>
         </td>
         <td><p>Stratify a pair of (cellType, stimulus) groups into the 4 sharing strata</p></td>
       </tr><tr><td>
-          <p><code><a href="ascTFActivity.html">ascTFActivity()</a></code> </p>
+          <p><code><a href="ascTestCounts.html">ascTestCounts()</a></code> </p>
         </td>
-        <td><p>Compute allele-specific TF activity for a set of samples</p></td>
-      </tr><tr><td>
-          <p><code><a href="ascTFActivityByDonor.html">ascTFActivityByDonor()</a></code> </p>
-        </td>
-        <td><p>Allele-specific TF activity computed within each donor</p></td>
-      </tr><tr><td>
-          <p><code><a href="ascTFActivitySwitch.html">ascTFActivitySwitch()</a></code> </p>
-        </td>
-        <td><p>Allele-specific TF activity across conditions, with a switch (handoff) score</p></td>
-      </tr><tr><td>
-          <p><code><a href="ascTFFamily.html">ascTFFamily()</a></code> </p>
-        </td>
-        <td><p>Assign a broad structural family to a (JASPAR) TF name</p></td>
+        <td><p>Test allele count matrices for allelic imbalance</p></td>
       </tr><tr><td>
           <p><code><a href="buildMasterSNPs.html">buildMasterSNPs()</a></code> </p>
         </td>
@@ -564,18 +552,6 @@
           <p><code><a href="plotASCManhattan.html">plotASCManhattan()</a></code> </p>
         </td>
         <td><p>Manhattan-style plot of ASC significance along the genome</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotASCTFActivity.html">plotASCTFActivity()</a></code> </p>
-        </td>
-        <td><p>Lollipop / dot plot of allele-specific TF activity across contexts</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotASCTFActivityScatter.html">plotASCTFActivityScatter()</a></code> </p>
-        </td>
-        <td><p>Resting-vs-stimulated allele-specific TF activity scatter</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotASCTFDonorDelta.html">plotASCTFDonorDelta()</a></code> </p>
-        </td>
-        <td><p>Per-donor robustness of the stimulation effect</p></td>
       </tr><tr><td>
           <p><code><a href="plotASCVolcano.html">plotASCVolcano()</a></code> </p>
         </td>
